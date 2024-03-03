@@ -1,0 +1,28 @@
+{
+  "name": "@ai-zen/chats-core",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "type": "module",
+  "scripts": {
+    "clean": "rimraf ./dist",
+    "prebuild": "npm run clean",
+    "build": "tsc",
+    "prepublishOnly": "npm run build",
+    "test": "node ./test.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/json-schema": "^7.0.15",
+    "typescript": "^5.3.3",
+    "rimraf": "^5.0.5"
+  },
+  "dependencies": {
+    "@ai-zen/async-queue": "^1.0.2",
+    "@ai-zen/event-bus": "^1.0.1",
+    "@ai-zen/node-fetch-event-source": "^2.1.3"
+  }
+}

@@ -1,0 +1,398 @@
+import {
+  EventStreamContentType,
+  fetchEventSource,
+} from "@ai-zen/node-fetch-event-source";
+import type { JSONSchema7 } from "json-schema";
+import { ChatAL } from "../../ChatAL.js";
+import {
+  ChatCompletionModel,
+  ChatCompletionModelCreateOptions,
+  ChatCompletionModelCreateStreamOptions,
+} from "../ChatCompletionModel.js";
+
+export namespace ChatGPTTypes {
+  export enum Role {
+    System = "system",
+    Assistant = "assistant",
+    User = "user",
+    Function = "function",
+    Tool = "tool",
+  }
+
+  export enum FinishReason {
+    Stop = "stop",
+    Length = "length",
+    ContentFilter = "content_filter",
+    FunctionCall = "function_call",
+  }
+
+  export interface ToolDefine {
+    type: "function";
+    function: FunctionDefine;
+  }
+
+  export interface FunctionDefine {
+    description: string;
+    name: string;
+    parameters: JSONSchema7;
+  }
+
+  export interface FunctionCall {
+    name?: string;
+    arguments?: any;
+  }
+
+  export interface ToolCall {
+    index?: number;
+    id?: number;
+    type?: string;
+    function?: FunctionCall;
+  }
+
+  export interface ImageUrlContentSection {
+    index?: number;
+    type: "image_url";
+    image_url: {
+      url: string;
+    };
+  }
+
+  export interface TextContentSection {
+    index?: number;
+    type: "text";
+    text: string;
+  }
+
+  export type MessageContentSection =
+    | ImageUrlContentSection
+    | TextContentSection;
+
+  export interface Message {
+    role: Role;
+    name?: string;
+    content?: string | MessageContentSection[];
+    function_call?: FunctionCall;
+    tool_calls?: ToolCall[];
+  }
+
+  export type ResponseMessage = Message;
+
+  export type ResponseDelta = ResponseMessage;
+
+  export interface RequestData {
+    model?: string;
+    stream?: boolean;
+    messages: Message[];
+    stop?: null;
+    temperature?: number;
+    top_p?: number;
+    frequency_penalty?: number;
+    presence_penalty?: number;
+    max_tokens?: number;
+    response_format?: { type: "json_object" };
+
+    tools?: ToolDefine[];
+    tool_choice?: "auto" | "none";
+
+    functions?: FunctionDefine[];
+    function_call?: "auto" | "none";
+  }
+
+  export interface Choice {
+    message?: ResponseMessage;
+    index: number;
+    finish_reason: FinishReason | null;
+    finish_details?: any;
+  }
+
+  export interface StreamChoice {
+    delta?: ResponseDelta;
+    index: number;
+    finish_reason: FinishReason | null;
+    finish_details?: any;
+  }
+
+  export interface Usage {
+    completion_tokens: number;
+    prompt_tokens: number;
+    total_tokens: number;
+  }
+
+  export interface ResponseData {
+    error?: {
+      code: string;
+      message: string;
+    };
+    id: string;
+    object: string;
+    created: number;
+    model: string;
+    choices: Choice[];
+    usage: Usage;
+    prompt_filter_results?: any;
+  }
+
+  export interface StreamResponseData {
+    error?: {
+      code: string;
+      message: string;
+    };
+    id: string;
+    object: string;
+    created: number;
+    model: string;
+    choices?: StreamChoice[];
+    usage: null;
+    prompt_filter_results?: any;
+  }
+}
+
+export interface ChatGPT_ModelConfig {
+  temperature?: number;
+  top_p?: number;
+  frequency_penalty?: number;
+  presence_penalty?: number;
+  max_tokens?: number;
+}
+
+export interface ChatGPT_EndpointConfig {
+  url: string;
+  headers?: Record<string, string>;
+  body?: {};
+}
+
+class RetriableError extends Error {}
+class FatalError extends Error {}
+
+export abstract class ChatGPT extends ChatCompletionModel<
+  ChatGPT_ModelConfig,
+  ChatGPT_EndpointConfig
+> {
+  async createCompletion(options: ChatCompletionModelCreateOptions) {
+    if (!this.model_config) {
+      throw new Error("ChatGPT config not set");
+    }
+    if (!this.endpoint_config) {
+      throw new Error("ChatGPT endpoint not set");
+    }
+
+    const config = this.model_config;
+    const endpoint = this.endpoint_config;
+
+    try {
+      const res = await fetch(endpoint.url, {
+        signal: options.signal,
+        method: "POST",
+        headers: endpoint.headers,
+        body: JSON.stringify({
+          ...endpoint.body,
+          ...config,
+          ...(() => {
+            if (!options.tools.length) return {};
+            if (
+              (this.constructor as typeof ChatCompletionModel)
+                .IS_SUPPORT_TOOLS_CALL
+            ) {
+              return {
+                tools: options.tools,
+                tool_choice: "auto",
+              };
+            } else {
+              return {
+                functions: options.tools.map((tool) => tool.function),
+                function_call: "auto",
+              };
+            }
+          })(),
+          stream: true,
+          messages: options.messages,
+        }),
+      });
+
+      const data: ChatGPTTypes.ResponseData = await res.json();
+
+      return this.formatData(data);
+    } catch (error: any) {
+      throw new FatalError(error?.message);
+    }
+  }
+
+  async createStream(options: ChatCompletionModelCreateStreamOptions) {
+    if (!this.model_config) {
+      throw new Error("ChatGPT config not set");
+    }
+    if (!this.endpoint_config) {
+      throw new Error("ChatGPT endpoint not set");
+    }
+
+    const config = this.model_config;
+    const endpoint = this.endpoint_config;
+
+    return fetchEventSource(endpoint.url, {
+      signal: options.signal,
+      method: "POST",
+      headers: endpoint.headers,
+      body: JSON.stringify({
+        ...endpoint.body,
+        ...config,
+        ...(() => {
+          if (!options.tools.length) return {};
+          if (
+            (this.constructor as typeof ChatCompletionModel)
+              .IS_SUPPORT_TOOLS_CALL
+          ) {
+            return {
+              tools: options.tools,
+              tool_choice: "auto",
+            };
+          } else {
+            return {
+              functions: options.tools.map((tool) => tool.function),
+              function_call: "auto",
+            };
+          }
+        })(),
+        stream: true,
+        messages: options.messages,
+      }),
+      async onopen(response) {
+        if (
+          response.ok &&
+          response.headers.get("content-type")?.includes(EventStreamContentType)
+        ) {
+          options.onOpen?.();
+          return;
+        } else if (
+          response.status >= 400 &&
+          response.status < 500 &&
+          response.status !== 429
+        ) {
+          throw new FatalError();
+        } else {
+          throw new RetriableError();
+        }
+      },
+      onerror(err) {
+        if (err instanceof FatalError) throw err;
+        if (err instanceof RetriableError) return;
+        throw err;
+      },
+      onmessage: (msg) => {
+        // if the server emits an error message, throw an exception
+        // so it gets handled by the onerror callback below:
+        if (msg.event === "FatalError") {
+          throw new FatalError(msg.data);
+        }
+
+        if (msg.data === "[DONE]") {
+          options.onDone?.();
+          return;
+        }
+
+        try {
+          const data = JSON.parse(msg.data) as ChatGPTTypes.StreamResponseData;
+          options.onData?.(this.formatSteamData(data));
+        } catch (error: any) {
+          throw new FatalError(error?.message);
+        }
+      },
+    });
+  }
+
+  formatData(data: ChatGPTTypes.ResponseData): ChatAL.ResponseData {
+    return {
+      ...data,
+      choices: data.choices?.map(this.formatChoice.bind(this)),
+    };
+  }
+
+  formatChoice(choice: ChatGPTTypes.Choice): ChatAL.Choice {
+    return {
+      ...choice,
+      message: this.formatMessage(choice.message),
+      finish_reason: this.formatFinalResponse(choice.finish_reason),
+    };
+  }
+
+  formatSteamData(
+    data: ChatGPTTypes.StreamResponseData
+  ): ChatAL.StreamResponseData {
+    return {
+      ...data,
+      choices: data.choices?.map(this.formatStreamChoice.bind(this)),
+    };
+  }
+
+  formatStreamChoice(choice: ChatGPTTypes.StreamChoice): ChatAL.StreamChoice {
+    return {
+      ...choice,
+      delta: this.formatDelta(choice.delta),
+      finish_reason: this.formatFinalResponse(choice.finish_reason),
+    };
+  }
+
+  formatDelta(
+    delta: ChatGPTTypes.ResponseDelta | undefined
+  ): ChatAL.Message | undefined {
+    if (!delta) return undefined;
+    return {
+      ...delta,
+      content: this.formatContent(delta.content),
+      role: this.formatRole(delta.role),
+    };
+  }
+
+  formatMessage(
+    message: ChatGPTTypes.Message | undefined
+  ): ChatAL.Message | undefined {
+    if (!message) return undefined;
+    return {
+      ...message,
+      content: this.formatContent(message.content),
+      role: this.formatRole(message.role),
+    };
+  }
+
+  formatContent(
+    content: ChatGPTTypes.ResponseDelta["content"]
+  ): ChatAL.Message["content"] {
+    return content ?? "";
+  }
+
+  formatFinalResponse(
+    finish_reason: ChatGPTTypes.FinishReason | null
+  ): ChatAL.FinishReason {
+    switch (finish_reason) {
+      case null:
+        return ChatAL.FinishReason.Stop;
+      case ChatGPTTypes.FinishReason.Stop:
+        return ChatAL.FinishReason.Stop;
+      case ChatGPTTypes.FinishReason.ContentFilter:
+        return ChatAL.FinishReason.ContentFilter;
+      case ChatGPTTypes.FinishReason.Length:
+        return ChatAL.FinishReason.Length;
+      default:
+        return ChatAL.FinishReason.Unknown;
+    }
+  }
+
+  formatRole(role: ChatGPTTypes.Role): ChatAL.Role {
+    switch (role) {
+      case ChatGPTTypes.Role.Assistant:
+        return ChatAL.Role.Assistant;
+      case ChatGPTTypes.Role.System:
+        return ChatAL.Role.System;
+      case ChatGPTTypes.Role.User:
+        return ChatAL.Role.User;
+      case ChatGPTTypes.Role.Function:
+        return ChatAL.Role.Function;
+      case ChatGPTTypes.Role.Tool:
+        return ChatAL.Role.Tool;
+      default:
+        return ChatAL.Role.Unknown;
+    }
+  }
+
+  static OUTPUT_MAX_TOKENS_LOWER_LIMIT = 800;
+  static OUTPUT_MAX_TOKENS = 4096;
+}
