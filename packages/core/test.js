@@ -24,7 +24,7 @@ async function main() {
       headers: {
         "Content-Type": "application/json",
         Authorization: OPENAI_API_KEY ? `Bearer ${OPENAI_API_KEY}` : undefined,
-        "api-key": OPENAI_API_KEY ? AZURE_API_KEY : undefined,
+        "api-key": AZURE_API_KEY ? AZURE_API_KEY : undefined,
       },
     },
   });
