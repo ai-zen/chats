@@ -58,7 +58,7 @@ export class Agent extends ChatContext implements ChatAL.Agent {
     // 发送代理聊天到服务器
     await agentChat.send();
 
-    // 将代理聊天的最后一个消息作为代理返回结果
+    // 将代理聊天的最后一个消息作为返回结果
     return agentContext.messages.at(-1)?.content; // TODO: 需要提前在代理设置里面告诉语言模型按特定格式返回内容。
   }
 
