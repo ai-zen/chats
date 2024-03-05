@@ -57,7 +57,7 @@ async function main() {
               required: ["timezone"],
             },
           },
-          callback(timezone) {
+          callback({ timezone }) {
             var now = new Date();
             var utcTimestamp = now.getTime();
             var targetTimezoneOffset = timezone * 60 * 60 * 1000;
@@ -109,7 +109,7 @@ async function main() {
 
   console.log("send...");
   const messages = await chat.sendUserMessage("当前时间纽约天气如何？");
-  console.log("messages", messages);
+  console.log("messages", JSON.stringify(messages, null, 4));
 }
 
 await main();

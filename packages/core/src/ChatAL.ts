@@ -123,7 +123,7 @@ export namespace ChatAL {
 
   export interface Tool extends ToolDefine {
     code?: string;
-    callback?: (...args: any[]) => any;
+    callback?: (parsedArgs: any) => any;
   }
 
   export interface Agent extends ToolDefine, ChatContext {}
