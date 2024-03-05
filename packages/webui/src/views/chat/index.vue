@@ -215,7 +215,7 @@ import {
   useScene,
   useSession,
   useTool,
-} from "../../composeables";
+} from "../../composables";
 import { ChatPL } from "../../types/ChatPL";
 
 const endpointFormRef = ref<InstanceType<typeof ElForm> | null>(null);

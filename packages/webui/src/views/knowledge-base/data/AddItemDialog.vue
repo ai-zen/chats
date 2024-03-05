@@ -103,7 +103,7 @@ import {
 import { ElForm, ElMessage } from "element-plus";
 import { reactive, ref, toRaw } from "vue";
 import * as api from "../../../api";
-import { useEndpoint } from "../../../composeables/useEndpoints";
+import { useEndpoint } from "../../../composables/useEndpoints";
 import { ChatPL } from "../../../types/ChatPL";
 import { FormMode } from "../../../types/Common";
 import { uuid } from "../../../utils/uuid";
