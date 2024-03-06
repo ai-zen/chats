@@ -164,10 +164,10 @@ export interface ChatGPT_EndpointConfig {
 class RetriableError extends Error {}
 class FatalError extends Error {}
 
-export abstract class ChatGPT extends ChatCompletionModel<
-  ChatGPT_ModelConfig,
-  ChatGPT_EndpointConfig
-> {
+export abstract class ChatGPT<
+  C extends ChatGPT_ModelConfig = ChatGPT_ModelConfig,
+  E extends ChatGPT_EndpointConfig = ChatGPT_EndpointConfig
+> extends ChatCompletionModel<C, E> {
   async createCompletion(options: ChatCompletionModelCreateOptions) {
     if (!this.model_config) {
       throw new Error("ChatGPT config not set");
@@ -176,35 +176,20 @@ export abstract class ChatGPT extends ChatCompletionModel<
       throw new Error("ChatGPT endpoint not set");
     }
 
-    const config = this.model_config;
-    const endpoint = this.endpoint_config;
+    const model_config = await this.formatModelConfig(this.model_config);
+    const endpoint_config = await this.formatEndpointConfig(
+      this.endpoint_config
+    );
 
     try {
-      const res = await fetch(endpoint.url, {
+      const res = await fetch(endpoint_config.url, {
         signal: options.signal,
         method: "POST",
-        headers: endpoint.headers,
+        headers: endpoint_config.headers,
         body: JSON.stringify({
-          ...endpoint.body,
-          ...config,
-          ...(() => {
-            if (!options.tools.length) return {};
-            if (
-              (this.constructor as typeof ChatCompletionModel)
-                .IS_SUPPORT_TOOLS_CALL
-            ) {
-              return {
-                tools: options.tools,
-                tool_choice: "auto",
-              };
-            } else {
-              return {
-                functions: options.tools.map((tool) => tool.function),
-                function_call: "auto",
-              };
-            }
-          })(),
-          stream: true,
+          ...endpoint_config.body,
+          ...model_config,
+          ...this.formatTools(options.tools),
           messages: options.messages,
         }),
       });
@@ -225,33 +210,19 @@ export abstract class ChatGPT extends ChatCompletionModel<
       throw new Error("ChatGPT endpoint not set");
     }
 
-    const config = this.model_config;
-    const endpoint = this.endpoint_config;
+    const model_config = await this.formatModelConfig(this.model_config);
+    const endpoint_config = await this.formatEndpointConfig(
+      this.endpoint_config
+    );
 
-    return fetchEventSource(endpoint.url, {
+    return fetchEventSource(endpoint_config.url, {
       signal: options.signal,
       method: "POST",
-      headers: endpoint.headers,
+      headers: endpoint_config.headers,
       body: JSON.stringify({
-        ...endpoint.body,
-        ...config,
-        ...(() => {
-          if (!options.tools.length) return {};
-          if (
-            (this.constructor as typeof ChatCompletionModel)
-              .IS_SUPPORT_TOOLS_CALL
-          ) {
-            return {
-              tools: options.tools,
-              tool_choice: "auto",
-            };
-          } else {
-            return {
-              functions: options.tools.map((tool) => tool.function),
-              function_call: "auto",
-            };
-          }
-        })(),
+        ...endpoint_config.body,
+        ...model_config,
+        ...this.formatTools(options.tools),
         stream: true,
         messages: options.messages,
       }),
@@ -297,6 +268,31 @@ export abstract class ChatGPT extends ChatCompletionModel<
         }
       },
     });
+  }
+
+  async formatModelConfig(model_config?: C): Promise<C> {
+    return { ...model_config } as C;
+  }
+
+  async formatEndpointConfig(endpoint_config?: E): Promise<E> {
+    return { ...endpoint_config } as E;
+  }
+
+  formatTools(tools: ChatAL.ToolDefine[] | undefined) {
+    if (!tools?.length) return {};
+    if (
+      (this.constructor as typeof ChatCompletionModel).IS_SUPPORT_TOOLS_CALL
+    ) {
+      return {
+        tools: tools,
+        tool_choice: "auto",
+      };
+    } else {
+      return {
+        functions: tools.map((tool) => tool.function),
+        function_call: "auto",
+      };
+    }
   }
 
   formatData(data: ChatGPTTypes.ResponseData): ChatAL.ResponseData {

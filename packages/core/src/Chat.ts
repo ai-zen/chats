@@ -229,8 +229,20 @@ export class Chat {
               }
 
               if (delta_tool_call.function?.arguments) {
-                pendingMsg.tool_calls[index]["function"]!["arguments"] +=
-                  delta_tool_call.function.arguments;
+                // 判断新参数是否包含了旧参数的一部分
+                if (
+                  delta_tool_call.function.arguments.startsWith(
+                    pendingMsg.tool_calls[index]["function"]!["arguments"]!
+                  )
+                ) {
+                  // 适配智谱GLM，每次给的参数是全量的。
+                  pendingMsg.tool_calls[index]["function"]!["arguments"] =
+                    delta_tool_call.function.arguments;
+                } else {
+                  // 适配GPT，每次给的参数是增量的。
+                  pendingMsg.tool_calls[index]["function"]!["arguments"] +=
+                    delta_tool_call.function.arguments;
+                }
               }
             }
           }
