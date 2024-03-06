@@ -10,19 +10,25 @@ export interface ModelEndpointRequire {
 export function useRequiredEndpoints(options: {
   getKnowledgeBases(ids: string[]): ChatPL.KnowledgeBasePO[];
   getAgents(ids: string[]): ChatPL.AgentPO[];
+  getScene(id: string): ChatPL.ScenePO | undefined;
 }) {
-  function getSceneRequiredEndpoints(scene: ChatPL.ScenePO | undefined) {
+  function getRequiredEndpoints(session: ChatPL.SessionPO | undefined) {
     const record: Record<string, ModelEndpointRequire> = {};
+
+    if (!session) return record;
+
+    const scene = options.getScene(session.scene_id);
 
     if (!scene) return record;
 
-    if (scene.model_key) {
-      record[scene.model_key] ??= {
-        model_key: scene.model_key,
+    let main_model_key = session.model_key || scene.model_key;
+    if (main_model_key) {
+      record[main_model_key] ??= {
+        model_key: main_model_key,
         type: ModelType.ChatCompletion,
         useAs: [],
       };
-      record[scene.model_key].useAs.push("当前场景");
+      record[main_model_key].useAs.push("当前场景");
     }
 
     options.getAgents(scene.agents_ids).forEach((agent) => {
@@ -49,6 +55,6 @@ export function useRequiredEndpoints(options: {
   }
 
   return {
-    getSceneRequiredEndpoints,
+    getRequiredEndpoints,
   };
 }

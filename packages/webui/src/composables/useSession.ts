@@ -12,7 +12,7 @@ export function useSession(options: {
     isLoading: false,
     isReady: false,
     isSaving: false,
-    current: null as ChatPL.SessionPO | null,
+    current: undefined as ChatPL.SessionPO | undefined,
   });
 
   async function getList() {

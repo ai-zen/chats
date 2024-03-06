@@ -1,6 +1,6 @@
 import { computed, reactive } from "vue";
 import * as api from "../api";
-import { Models, ModelType } from "@ai-zen/chats-core";
+import { Models, ModelsKeys, ModelType } from "@ai-zen/chats-core";
 import { ChatPL } from "../types/ChatPL";
 
 export function useEndpoint() {
@@ -25,7 +25,20 @@ export function useEndpoint() {
     await getList();
   }
 
-  const endpointsOfModelType = computed(() => {
+  const endpointsModelKeyMap = computed(() => {
+    const map = {} as Record<ModelsKeys, ChatPL.EndpointPO[]>;
+
+    endpointState.list.forEach((endpoint) => {
+      map[endpoint.model_key] ??= [];
+      map[endpoint.model_key]?.push(endpoint);
+    });
+
+    console.log('map', map)
+
+    return map;
+  });
+
+  const endpointsModelTypeMap = computed(() => {
     const map: Record<ModelType, ChatPL.EndpointPO[]> = {
       [ModelType.Completion]: [],
       [ModelType.ChatCompletion]: [],
@@ -43,7 +56,7 @@ export function useEndpoint() {
   function isInvalidEndpoint(modelType: ModelType, endpointId?: string) {
     return (
       !endpointId ||
-      !endpointsOfModelType.value?.[modelType].some((x) => x.id == endpointId)
+      !endpointsModelTypeMap.value?.[modelType].some((x) => x.id == endpointId)
     );
   }
 
@@ -59,7 +72,8 @@ export function useEndpoint() {
 
   return {
     endpointState,
-    endpointsOfModelType,
+    endpointsModelTypeMap,
+    endpointsModelKeyMap,
     isInvalidEndpoint,
     initEndpointState,
     getEndpoint,

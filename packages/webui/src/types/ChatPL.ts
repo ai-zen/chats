@@ -14,6 +14,7 @@ export namespace ChatPL {
     title: string;
     icon: string;
     code?: string;
+    callback?: (...args: any[]) => any;
   }
 
   export interface AgentPO extends ChatAL.ToolDefine {
@@ -48,6 +49,8 @@ export namespace ChatPL {
     endpoints_ids: Record<string, string>;
     messages: ChatAL.Message[];
     newMessage: string;
+    model_key?: ChatCompletionModelsKeys;
+    model_config?: any;
   }
 
   export interface EndpointPO {

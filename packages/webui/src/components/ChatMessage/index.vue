@@ -125,8 +125,11 @@ const formattedMessageContent = computed(() => {
       content = message.content || "";
     }
 
-    if (message.role == ChatAL.Role.Function) {
-      content = `函数调用结果：\`${message.name}\`\n\n`;
+    if (
+      message.role == ChatAL.Role.Function ||
+      message.role == ChatAL.Role.Tool
+    ) {
+      content = `\`${message.name}\`\n\n`;
       content += `\n\`\`\`json\n${message.content}\n\`\`\``;
     }
 

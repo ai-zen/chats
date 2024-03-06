@@ -74,7 +74,10 @@
           <div class="chat-input-panel">
             <div class="toolbar-row">
               <div class="left">
-                <el-button size="small" title="设置"
+                <el-button
+                  size="small"
+                  title="设置"
+                  @click="sessionSettingDialogState.visible = true"
                   ><el-icon> <Setting /> </el-icon
                 ></el-button>
                 <el-button size="small" title="上传图片"
@@ -84,57 +87,8 @@
                   ><el-icon> <MagicStick /> </el-icon
                 ></el-button>
                 <el-button size="small" title="emoji">😀</el-button>
-
-                <el-form
-                  class="endpoint-form"
-                  v-if="sessionState.current.endpoints_ids"
-                  inline
-                  :model="sessionState.current.endpoints_ids"
-                  ref="endpointFormRef"
-                >
-                  <el-form-item
-                    v-for="item of requiredEndpoints"
-                    :key="item.model_key"
-                    :prop="item.model_key"
-                    :rules="{
-                      validator(_rule, value, callback) {
-                        if (isInvalidEndpoint(item.type, value)) {
-                          callback(new Error('请选择一个有效服务端'));
-                        } else {
-                          callback();
-                        }
-                      },
-                    }"
-                  >
-                    <el-tooltip
-                      effect="light"
-                      placement="top"
-                      :content="`请选择服务端，要求兼容 (${
-                        Models[item.model_key]?.title
-                      }) 模型，用于【${item.useAs.join('、')}】`"
-                    >
-                      <!-- TODO: 应根据模型参数过滤出相兼容的服务端 -->
-                      <el-select
-                        size="small"
-                        v-model="
-                          sessionState.current.endpoints_ids[item.model_key]
-                        "
-                        :placeholder="`请选择模型服务端（${
-                          Models[item.model_key]?.title
-                        }）`"
-                        clearable
-                      >
-                        <el-option
-                          v-for="endpoint of endpointsOfModelType[item.type]"
-                          :key="endpoint.id"
-                          :label="endpoint.title"
-                          :value="endpoint.id"
-                        ></el-option>
-                      </el-select>
-                    </el-tooltip>
-                  </el-form-item>
-                </el-form>
               </div>
+
               <!-- Resize Bar -->
               <div class="right">
                 <el-button size="small" plain title="语音输入"
@@ -181,10 +135,79 @@
     <div class="right-side-bar">
       <!-- Scene List -->
     </div>
+
+    <el-dialog title="场景配置" v-model="sessionSettingDialogState.visible">
+      <el-form
+        v-if="sessionState.current && currentScene"
+        :model="sessionState.current"
+        ref="sessionFormRef"
+        label-position="top"
+      >
+        <el-form-item prop="model_key" label="聊天模型">
+          <el-select
+            v-model="sessionState.current.model_key"
+            style="width: 100%"
+            clearable
+            :placeholder="`使用场景默认模型 (${
+              Models[currentScene.model_key]?.title
+            })`"
+          >
+            <el-option
+              v-for="Model of ChatCompletionModels"
+              :label="`${Model.title} (${endpointsModelKeyMap[Model.name as ModelsKeys]?.length || 0})` "
+              :value="Model.name"
+              :disabled="!endpointsModelKeyMap[Model.name as ModelsKeys]?.length"
+            ></el-option>
+          </el-select>
+        </el-form-item>
+
+        <el-form-item
+          v-for="item of requiredEndpoints"
+          :key="item.model_key"
+          :prop="`endpoints_ids.${item.model_key}`"
+          :rules="{
+            validator(_rule, value, callback) {
+              if (isInvalidEndpoint(item.type, value)) {
+                callback(new Error('请选择一个有效服务端'));
+              } else {
+                callback();
+              }
+            },
+          }"
+          :label="`服务端 用于 ${item.useAs.join('、')}`"
+        >
+          <el-select
+            v-model="sessionState.current.endpoints_ids[item.model_key]"
+            :placeholder="`请选择模型服务端 (${Models[item.model_key]?.title})`"
+            clearable
+            style="width: 100%"
+          >
+            <el-option
+              v-for="endpoint of endpointsModelKeyMap[item.model_key]"
+              :key="endpoint.id"
+              :label="endpoint.title"
+              :value="endpoint.id"
+            ></el-option>
+          </el-select>
+        </el-form-item>
+      </el-form>
+    </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
+import {
+  Agent,
+  Chat,
+  ChatCompletionModels,
+  ChatContext,
+  Endpoint,
+  KnowledgeBase,
+  Models,
+  ModelsKeys,
+  Scene,
+  Tool,
+} from "@ai-zen/chats-core";
 import {
   CloseBold,
   MagicStick,
@@ -196,18 +219,7 @@ import {
   VideoPause,
 } from "@element-plus/icons-vue";
 import { ElForm, ElMessage } from "element-plus";
-import { computed, onMounted, ref, watch } from "vue";
-import {
-  Agent,
-  Chat,
-  ChatContext,
-  Endpoint,
-  KnowledgeBase,
-  Models,
-  ModelsKeys,
-  Scene,
-  Tool,
-} from "@ai-zen/chats-core";
+import { computed, onMounted, reactive, ref, watch } from "vue";
 import { ChatMessage, EmojiInput } from "../../components";
 import {
   useAgent,
@@ -220,10 +232,10 @@ import {
 } from "../../composables";
 import { ChatPL } from "../../types/ChatPL";
 
-const endpointFormRef = ref<InstanceType<typeof ElForm> | null>(null);
+const sessionFormRef = ref<InstanceType<typeof ElForm> | null>(null);
 
 const {
-  endpointsOfModelType,
+  endpointsModelKeyMap,
   isInvalidEndpoint,
   initEndpointState,
   getEndpoint,
@@ -237,13 +249,14 @@ const { initToolState, getTools } = useTool();
 
 const { initAgentState, getAgents } = useAgent();
 
-const { getSceneRequiredEndpoints } = useRequiredEndpoints({
+const { getRequiredEndpoints } = useRequiredEndpoints({
   getAgents,
   getKnowledgeBases,
+  getScene,
 });
 
 const requiredEndpoints = computed(() => {
-  return getSceneRequiredEndpoints(getScene(sessionState.current?.scene_id));
+  return getRequiredEndpoints(sessionState.current);
 });
 
 const {
@@ -310,26 +323,38 @@ const chatRef = ref<Chat>();
 function initChat() {
   if (!endpoints.value) return;
 
-  const session = sessionState.current;
-  if (!session) return;
+  const sessionPO = sessionState.current;
+  if (!sessionPO) return;
 
-  const scene = getScene(session.scene_id);
-  if (!scene) return;
+  const scenePO = getScene(sessionPO.scene_id);
+  if (!scenePO) return;
 
-  // TODO:
-  // 在这里自动选择可用 endpoint，如果没选择的话。
-  // 但是如果已经选择了失效的 endpoint，那么需要提示用户，让用户手动选择可用 endpoint。
+  const scene = formatScene(scenePO);
 
   chatRef.value = new Chat({
     context: new ChatContext({
-      ...formatScene(scene),
-      messages: session.messages,
+      ...scene,
+      model_key: sessionPO.model_key || scene.model_key,
+      model_config: sessionPO.model_config || scene.model_config,
+      messages: sessionPO.messages,
     }),
     endpoints: endpoints.value!,
   });
 }
 
-watch([() => sessionState.current, () => endpoints.value], initChat);
+watch(
+  [
+    () => sessionState.current,
+    () => endpoints.value,
+    () => sessionState.current?.model_key,
+    () => sessionState.current?.model_config,
+  ],
+  initChat
+);
+
+const currentScene = computed(() => {
+  return getScene(sessionState.current?.scene_id);
+});
 
 const isHasPendingMessage = computed(() => {
   return chatRef.value?.isHasPendingMessage;
@@ -342,9 +367,10 @@ async function onSendClick() {
   }
 
   try {
-    await endpointFormRef.value?.validate();
+    await sessionFormRef.value?.validate();
   } catch (error) {
-    ElMessage.error("请选择服务端");
+    ElMessage.error("请选择一个有效的服务端");
+    sessionSettingDialogState.visible = true;
     return;
   }
 
@@ -356,7 +382,12 @@ function onAbortClick() {
   chatRef.value?.abortLastSend();
 }
 
+const sessionSettingDialogState = reactive({
+  visible: true, // 提前渲染会话表单
+});
+
 onMounted(async () => {
+  sessionSettingDialogState.visible = false;
   await Promise.all([
     initEndpointState(),
     initSceneState(),
@@ -434,19 +465,6 @@ onMounted(async () => {
 
   .right {
     margin-left: 12px;
-  }
-
-  .endpoint-form :deep() {
-    margin-left: 12px;
-    margin-bottom: -18px;
-
-    .el-form-item {
-      margin-right: 12px;
-    }
-
-    .el-select {
-      width: 150px;
-    }
   }
 }
 

@@ -71,7 +71,7 @@
             clearable
           >
             <el-option
-              v-for="endpoint of endpointsOfModelType[ModelType.Embedding]"
+              v-for="endpoint of endpointsModelTypeMap[ModelType.Embedding]"
               :key="endpoint.id"
               :label="endpoint.title"
               :value="endpoint.id"
@@ -138,7 +138,7 @@ async function onDialogCancel() {
 }
 
 const {
-  endpointsOfModelType,
+  endpointsModelTypeMap,
   getEndpoint,
   isInvalidEndpoint,
   initEndpointState,
@@ -164,7 +164,7 @@ async function onDialogConfirm() {
         ?.endpoint_config,
       model_config: dialogState.detail.model_config,
     }) as EmbeddingModel;
-    dialogState.form.vector = await embeddingModel.create(
+    dialogState.form.vector = await embeddingModel.createEmbedding(
       dialogState.form.text
     );
     const item = structuredClone(toRaw(dialogState.form));
