@@ -63,31 +63,31 @@ export class Message implements ChatAL.Message {
   /**
    * 创建工具结果消息
    */
-  static createToolCallResultMessage(
+  static createToolMessage(
     tool_call: ChatAL.ToolCall,
-    result: any
+    result = ""
   ): ChatAL.Message {
     return {
       role: ChatAL.Role.Tool,
       tool_call_id: tool_call.id,
       name: tool_call.function!.name,
       content: result,
-      status: ChatAL.MessageStatus.Completed,
+      status: ChatAL.MessageStatus.Pending,
     };
   }
 
   /**
    * 创建函数结果消息
    */
-  static createFunctionCallResultMessage(
+  static createFunctionMessage(
     function_call: ChatAL.FunctionCall,
-    result: any
+    result = ""
   ): ChatAL.Message {
     return {
       role: ChatAL.Role.Function,
       name: function_call!.name,
       content: result,
-      status: ChatAL.MessageStatus.Completed,
+      status: ChatAL.MessageStatus.Pending,
     };
   }
 }

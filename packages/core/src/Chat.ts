@@ -38,11 +38,12 @@ export class Chat {
 
     // 获取模型服务端
     const endpoint = this.endpoints[model_key];
+    if (!endpoint) throw new Error("Endpoint not found");
 
     // 创建模型实例
     const model = new ChatCompletionModels[model_key]({
       model_config: this.context.model_config,
-      endpoint_config: endpoint?.endpoint_config,
+      endpoint_config: endpoint.endpoint_config,
     }) as ChatCompletionModel;
     if (!model) throw new Error("Model not found");
 
@@ -63,33 +64,29 @@ export class Chat {
     // 从消息列表过滤出历史记录，并去除无用字段。
     const history = this.context.messages
       .filter(
-        (message) =>
-          (message.status == undefined ||
-            message.status == ChatAL.MessageStatus.Completed) &&
-          !message.omit
+        (x) =>
+          (x.status == undefined ||
+            x.status == ChatAL.MessageStatus.Completed) &&
+          !x.omit
       )
-      .map((message) => ({
-        role: message.role,
-        content: message.content,
-        function_call: message.function_call
-          ? message.function_call
-          : undefined,
-        tool_calls: message.tool_calls?.length ? message.tool_calls : undefined,
-        tool_call_id: message.tool_call_id ?? undefined,
-        name: message.name ?? undefined,
+      .map((x) => ({
+        role: x.role,
+        content: x.content,
+        function_call: x.function_call ? x.function_call : undefined,
+        tool_calls: x.tool_calls?.length ? x.tool_calls : undefined,
+        tool_call_id: x.tool_call_id ?? undefined,
+        name: x.name ?? undefined,
       }));
 
     // 从聊天代理和聊天工具合并为模型工具，并去除无用字段。
-    const tools = [...this.context.agents, ...this.context.tools].map(
-      (tool) => ({
-        type: tool.type,
-        function: {
-          name: tool.function.name,
-          description: tool.function.description,
-          parameters: tool.function.parameters,
-        },
-      })
-    );
+    const tools = [...this.context.agents, ...this.context.tools].map((x) => ({
+      type: x.type,
+      function: {
+        name: x.function.name,
+        description: x.function.description,
+        parameters: x.function.parameters,
+      },
+    }));
 
     // 使用模型实例的发送方法将对话发送给服务器
     model
@@ -262,53 +259,72 @@ export class Chat {
         this.events.emit("queue:after", data);
       }
 
-      // 定义调用结果消息列表，用于接受调用结果供下一轮对话使用
-      const callResultsMessages: ChatAL.Message[] = [];
+      // 记录这一轮工具调用消息，用于检测是否正确完成了所有工具调用。
+      const callResults: ChatAL.Message[] = [];
 
-      // 等消息完流式数据后，如果判断有并行工具调用，则进行之
+      // 等消费完流式数据后，如果判断有并行工具调用，则进行之
       if (pendingMsg.tool_calls?.length) {
-        // 等待所有工具调用完成
         await Promise.all(
-          pendingMsg.tool_calls?.map(async (tool_call) => {
-            if (tool_call.function) {
-              // 获取工具函数调用结果
-              const result = await this.getFunctionCallResult(
-                tool_call.function
-              );
+          pendingMsg.tool_calls
+            ?.filter((x) => x.function)
+            ?.map(async (tool_call) => {
+              // 创建工具函数调用结果消息，立即回显到主消息列表
+              const resultMsg = this.push(Message.createToolMessage(tool_call));
 
-              // 创建工具调用结果消息加到调用结果消息列表
-              callResultsMessages.push(
-                Message.createToolCallResultMessage(tool_call, result)
-              );
-            }
-          })
+              // 记录这次调用，用于后续检测是否调用成功
+              callResults.push(resultMsg);
+
+              try {
+                // 获取工具函数调用结果
+                const result = await this.getFunctionCallResult(
+                  tool_call.function!
+                );
+
+                // 回显调用结果
+                resultMsg.content = result;
+                resultMsg.status = ChatAL.MessageStatus.Completed;
+              } catch (error: any) {
+                // 如果获取调用结果过程中发生了错误，则回显错误
+                resultMsg.content = error?.message;
+                resultMsg.status = ChatAL.MessageStatus.Error;
+              }
+            })
         );
       }
 
       // 等消息完流式数据后，如果判断有函数调用，则进行之
       if (pendingMsg.function_call) {
-        // 获取工具函数调用结果
-        const result = await this.getFunctionCallResult(
-          pendingMsg.function_call
+        // 创建函数调用结果消息，立即回显到主消息列表
+        const resultMsg = this.push(
+          Message.createFunctionMessage(pendingMsg.function_call)
         );
 
-        // 创建工具调用结果消息加到调用结果消息列表
-        callResultsMessages.push(
-          Message.createFunctionCallResultMessage(
-            pendingMsg.function_call,
-            result
-          )
-        );
+        // 记录这次调用，用于后续检测是否调用成功
+        callResults.push(resultMsg);
+
+        try {
+          // 获取函数调用结果
+          const result = await this.getFunctionCallResult(
+            pendingMsg.function_call
+          );
+
+          // 回显调用结果
+          resultMsg.content = result;
+          resultMsg.status = ChatAL.MessageStatus.Completed;
+        } catch (error: any) {
+          // 如果获取调用结果过程中发生了错误，则回显错误
+          resultMsg.content = error?.message;
+          resultMsg.status = ChatAL.MessageStatus.Error;
+        }
       }
 
-      // 如果至少有一条调用结果消息
-      if (callResultsMessages.length) {
-        // 将调用结果消息列表内容加到主消息列表用于下一轮对话
-        this.context.messages.push(...callResultsMessages);
-
+      // 如果这一轮至少有一次工具调用，且所有工具调用都成功了
+      if (
+        callResults.length &&
+        callResults.every((x) => x.status === ChatAL.MessageStatus.Completed)
+      ) {
         // 创建助手消息加到消息列表用于接收响应结果
-        const assistantMessage = Message.createAssistantMessage();
-        this.context.messages.push(assistantMessage);
+        this.push(Message.createAssistantMessage());
 
         // 进行下一轮对话
         await this.send();
@@ -320,6 +336,7 @@ export class Chat {
       this.events.emit("error", error);
     }
 
+    // 在对话彻底完成后返回消息列表
     return this.context.messages;
   }
 
@@ -355,9 +372,9 @@ export class Chat {
   get isHasPendingMessage() {
     return (
       this.context.messages.some(
-        (msg) =>
-          msg.status === ChatAL.MessageStatus.Pending ||
-          msg.status == ChatAL.MessageStatus.Writing
+        (x) =>
+          x.status === ChatAL.MessageStatus.Pending ||
+          x.status == ChatAL.MessageStatus.Writing
       ) ?? false
     );
   }
@@ -377,27 +394,30 @@ export class Chat {
    */
   async sendUserMessage(question: string) {
     // 以问题为内容创建用户消息加到消息列表用于提问
-    const userMessage = Message.createUserMessage(question);
-    this.context.messages.push(userMessage);
+    this.push(Message.createUserMessage(question));
 
     // 创建助手消息加到消息列表用于接收响应结果
-    const assistantMessage = Message.createAssistantMessage();
-    this.context.messages.push(assistantMessage);
+    this.push(Message.createAssistantMessage());
 
     // 如果查询到参考资料就插入到用户提的问题的前面
     const references = await this.queryKnowledgeBases(question);
     if (references) {
-      const referencesMessage = Message.createUserMessage(references);
-      referencesMessage.hidden = true;
-      this.context.messages.splice(
-        this.context.messages.length - 2,
-        0,
-        referencesMessage
-      );
+      this.context.messages.splice(this.context.messages.length - 2, 0, {
+        ...Message.createUserMessage(references),
+        hidden: true,
+      });
     }
 
     // 发送聊天到服务器
     return this.send();
+  }
+
+  /**
+   * 为消息列表加一条消息
+   */
+  push(message: ChatAL.Message) {
+    this.context.messages.push(message);
+    return this.context.messages.at(-1)!;
   }
 
   /**
@@ -423,16 +443,14 @@ export class Chat {
 
         // 从知识库查询相关信息
         const records = kb.search(vector, 5, 0.8);
-        const texts = records.map((record) => record.text);
+        const texts = records.map((x) => x.text);
 
         return texts;
       })
     );
 
-    const texts = results.flat().filter((text) => text) as string[];
+    const texts = results.flat().filter((x) => x) as string[];
     if (!texts.length) return;
-    return `参考资料：\n\n${texts
-      .map((text, index) => `${index + 1}. ${text}`)
-      .join("\n")}`;
+    return `参考资料：\n\n${texts.map((x, i) => `${i + 1}. ${x}`).join("\n")}`;
   }
 }
