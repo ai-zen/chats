@@ -24,6 +24,6 @@
     "@ai-zen/async-queue": "^1.0.2",
     "@ai-zen/event-bus": "^1.0.1",
     "@ai-zen/node-fetch-event-source": "^2.1.4",
-    "jose": "^5.2.2"
+    "jose": "^5"
   }
 }
