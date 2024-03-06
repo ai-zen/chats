@@ -60,7 +60,8 @@
           'MODEL_CONFIG_FORM' in MODELS_FORMS_MAP[formState.form.model_key]
         "
         :is="MODELS_FORMS_MAP[formState.form.model_key].MODEL_CONFIG_FORM"
-        :form="formState.form.model_config"
+        :model_config="formState.form.model_config"
+        :model_key="formState.form.model_key"
       >
       </component>
 

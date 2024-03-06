@@ -1,19 +1,19 @@
 <template>
-  <ElFormItem
+  <el-form-item
     prop="endpoint_config.url"
     label="url"
     :rules="{ required: true, message: '请输入url' }"
   >
-    <ElInput v-model="props.endpoint_config.url" placeholder="请输入url" />
-  </ElFormItem>
+    <el-input v-model="props.endpoint_config.url" placeholder="请输入url" />
+  </el-form-item>
 
-  <ElFormItem prop="endpoint_config.headers" label="headers">
+  <el-form-item prop="endpoint_config.headers" label="headers">
     <JsonEditor v-model="props.endpoint_config.headers" />
-  </ElFormItem>
+  </el-form-item>
 
-  <ElFormItem prop="endpoint_config.body" label="body">
+  <el-form-item prop="endpoint_config.body" label="body">
     <JsonEditor v-model="props.endpoint_config.body" />
-  </ElFormItem>
+  </el-form-item>
 </template>
 
 <script setup lang="ts">

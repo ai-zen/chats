@@ -10,8 +10,8 @@
       <RouterLink to="/endpoint/list">服务端</RouterLink>
     </div>
     <div class="user">
-      <div class="avatar">L</div>
-      <div class="name">Hi, LZQ</div>
+      <div class="avatar">A</div>
+      <div class="name">Hi, 测试用户</div>
     </div>
   </div>
 </template>
@@ -26,8 +26,8 @@
   background-color: var(--el-bg-color);
   position: relative;
   z-index: 3;
-  border-bottom: var(--el-border);
-  // box-shadow: var(--el-box-shadow-light);
+  // border-bottom: var(--el-border);
+  box-shadow: var(--el-box-shadow-light);
 
   .logo {
     font-weight: bold;

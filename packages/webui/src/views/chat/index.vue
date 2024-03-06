@@ -2,177 +2,179 @@
   <div class="chat">
     <!-- 场景列表侧边栏 -->
     <div class="left-side-bar scenes-side-bar" v-loading="sceneState.isLoading">
-      <div class="scroll scenes">
-        <div
-          class="scene"
-          v-for="scene of sceneState.list"
-          :key="scene.id"
-          @click="sceneState.current = scene"
-          @dblclick="addSession(createSession(scene))"
-          :class="{
-            'is-current': sceneState.current?.id == scene.id,
-          }"
-        >
-          <EmojiInput disabled class="icon" v-model="scene.icon"></EmojiInput>
-          <div class="title">{{ scene.title }}</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 对话列表侧边栏 -->
-    <div
-      class="left-side-bar sessions-side-bar"
-      v-loading="sessionState.isLoading"
-    >
-      <div class="scroll sessions">
-        <el-empty
-          v-if="!sessionState.list.length"
-          description="空空如也~"
-        ></el-empty>
-        <div
-          class="session"
-          v-for="(session, index) of sessionState.list"
-          :key="session.id"
-          @click="sessionState.current = session"
-          :class="{
-            'is-current': sessionState.current?.id == session.id,
-          }"
-        >
-          <EmojiInput class="icon" v-model="session.icon"></EmojiInput>
-          <input class="title" v-model="session.title" />
-          <!-- v-if="sessionState.list.length > 1" -->
-          <el-icon class="remove" @click.stop="removeSession(index)">
-            <CloseBold />
-          </el-icon>
-        </div>
-      </div>
-      <el-button
-        type="success"
-        :icon="Plus"
-        size="large"
-        class="add-session"
-        @click="() => addSession()"
-        >新增对话</el-button
-      >
-    </div>
-
-    <!-- 对话内容 -->
-    <div
-      class="center-content"
-      v-loading="sceneState.isLoading || sessionState.isLoading"
-    >
-      <template v-if="sessionState.current">
-        <div class="scroll messages">
-          <template
-            v-for="(message, _index) of sessionState.current?.messages"
-            :key="_index"
+      <el-scrollbar class="scroll-y">
+        <div class="scenes">
+          <div
+            class="scene"
+            v-for="scene of sceneState.list"
+            :key="scene.id"
+            @click="sceneState.current = scene"
+            :class="{
+              'is-current': sceneState.current?.id == scene.id,
+            }"
           >
-            <ChatMessage v-if="!message.hidden" :message="message" />
-          </template>
+            <EmojiInput disabled class="icon" v-model="scene.icon"></EmojiInput>
+            <div class="title">{{ scene.title }}</div>
+            <div class="add" @click="addSession(createSession(scene))">
+              <el-icon>
+                <Plus></Plus>
+              </el-icon>
+            </div>
+          </div>
         </div>
-        <div class="chat-input-panel">
-          <div class="toolbar-row">
-            <div class="left">
-              <el-button size="small" title="设置"
-                ><el-icon> <Setting /> </el-icon
-              ></el-button>
-              <el-button size="small" title="上传图片"
-                ><el-icon> <PictureRounded /> </el-icon
-              ></el-button>
-              <el-button size="small" title="提问示例"
-                ><el-icon> <MagicStick /> </el-icon
-              ></el-button>
-              <el-button size="small" title="emoji">😀</el-button>
+      </el-scrollbar>
+    </div>
 
-              <el-form
-                class="endpoint-form"
-                v-if="sessionState.current.endpoints_ids"
-                inline
-                :model="sessionState.current.endpoints_ids"
-                ref="endpointFormRef"
+    <div class="center-content">
+      <!-- 对话列表侧边栏 -->
+      <div
+        class="top-bar sessions-top-bar"
+        v-if="sessionState.list.length"
+        v-loading="sessionState.isLoading"
+      >
+        <el-scrollbar class="scroll-x">
+          <div class="sessions">
+            <div class="session placeholder-session"></div>
+            <div
+              class="session"
+              v-for="(session, index) of sessionState.list"
+              :key="session.id"
+              @click="sessionState.current = session"
+              :class="{
+                'is-current': sessionState.current?.id == session.id,
+              }"
+            >
+              <div class="icon">{{ session.icon }}</div>
+              <div class="title">{{ session.title }}</div>
+              <el-icon class="remove" @click.stop="removeSession(index)">
+                <CloseBold />
+              </el-icon>
+            </div>
+          </div>
+        </el-scrollbar>
+      </div>
+
+      <!-- 对话内容 -->
+      <div
+        class="chat-content"
+        v-loading="sceneState.isLoading || sessionState.isLoading"
+      >
+        <template v-if="sessionState.current">
+          <el-scrollbar class="scroll-y">
+            <div class="messages">
+              <template
+                v-for="(message, _index) of sessionState.current?.messages"
+                :key="_index"
               >
-                <el-form-item
-                  v-for="item of requiredEndpoints"
-                  :key="item.model_key"
-                  :prop="item.model_key"
-                  :rules="{
-                    validator(_rule, value, callback) {
-                      if (isInvalidEndpoint(item.type, value)) {
-                        callback(new Error('请选择一个有效服务端'));
-                      } else {
-                        callback();
-                      }
-                    },
-                  }"
+                <ChatMessage v-if="!message.hidden" :message="message" />
+              </template>
+            </div>
+          </el-scrollbar>
+
+          <div class="chat-input-panel">
+            <div class="toolbar-row">
+              <div class="left">
+                <el-button size="small" title="设置"
+                  ><el-icon> <Setting /> </el-icon
+                ></el-button>
+                <el-button size="small" title="上传图片"
+                  ><el-icon> <PictureRounded /> </el-icon
+                ></el-button>
+                <el-button size="small" title="提问示例"
+                  ><el-icon> <MagicStick /> </el-icon
+                ></el-button>
+                <el-button size="small" title="emoji">😀</el-button>
+
+                <el-form
+                  class="endpoint-form"
+                  v-if="sessionState.current.endpoints_ids"
+                  inline
+                  :model="sessionState.current.endpoints_ids"
+                  ref="endpointFormRef"
                 >
-                  <el-tooltip
-                    effect="light"
-                    placement="top"
-                    :content="`请选择服务端，要求兼容 (${
-                      Models[item.model_key]?.title
-                    }) 模型，用于【${item.useAs.join('、')}】`"
+                  <el-form-item
+                    v-for="item of requiredEndpoints"
+                    :key="item.model_key"
+                    :prop="item.model_key"
+                    :rules="{
+                      validator(_rule, value, callback) {
+                        if (isInvalidEndpoint(item.type, value)) {
+                          callback(new Error('请选择一个有效服务端'));
+                        } else {
+                          callback();
+                        }
+                      },
+                    }"
                   >
-                    <!-- TODO: 应根据模型参数过滤出相兼容的服务端 -->
-                    <el-select
-                      size="small"
-                      v-model="
-                        sessionState.current.endpoints_ids[item.model_key]
-                      "
-                      :placeholder="`请选择模型服务端（${
+                    <el-tooltip
+                      effect="light"
+                      placement="top"
+                      :content="`请选择服务端，要求兼容 (${
                         Models[item.model_key]?.title
-                      }）`"
-                      clearable
+                      }) 模型，用于【${item.useAs.join('、')}】`"
                     >
-                      <el-option
-                        v-for="endpoint of endpointsOfModelType[item.type]"
-                        :key="endpoint.id"
-                        :label="endpoint.title"
-                        :value="endpoint.id"
-                      ></el-option>
-                    </el-select>
-                  </el-tooltip>
-                </el-form-item>
-              </el-form>
+                      <!-- TODO: 应根据模型参数过滤出相兼容的服务端 -->
+                      <el-select
+                        size="small"
+                        v-model="
+                          sessionState.current.endpoints_ids[item.model_key]
+                        "
+                        :placeholder="`请选择模型服务端（${
+                          Models[item.model_key]?.title
+                        }）`"
+                        clearable
+                      >
+                        <el-option
+                          v-for="endpoint of endpointsOfModelType[item.type]"
+                          :key="endpoint.id"
+                          :label="endpoint.title"
+                          :value="endpoint.id"
+                        ></el-option>
+                      </el-select>
+                    </el-tooltip>
+                  </el-form-item>
+                </el-form>
+              </div>
+              <!-- Resize Bar -->
+              <div class="right">
+                <el-button size="small" plain title="语音输入"
+                  ><el-icon> <Microphone /> </el-icon
+                ></el-button>
+                <el-button
+                  type="primary"
+                  plain
+                  title="发送"
+                  @click="onSendClick"
+                  :disabled="isHasPendingMessage"
+                  ><el-icon> <Promotion /> </el-icon>&ensp;发送</el-button
+                >
+                <el-button
+                  type="danger"
+                  plain
+                  title="停止"
+                  @click="onAbortClick"
+                  :disabled="!isHasPendingMessage"
+                  ><el-icon> <VideoPause /> </el-icon>&ensp;停止</el-button
+                >
+              </div>
             </div>
-            <!-- Resize Bar -->
-            <div class="right">
-              <el-button size="small" plain title="语音输入"
-                ><el-icon> <Microphone /> </el-icon
-              ></el-button>
-              <el-button
-                type="primary"
-                plain
-                title="发送"
-                @click="onSendClick"
-                :disabled="isHasPendingMessage"
-                ><el-icon> <Promotion /> </el-icon>&ensp;发送</el-button
-              >
-              <el-button
-                type="danger"
-                plain
-                title="停止"
-                @click="onAbortClick"
-                :disabled="!isHasPendingMessage"
-                ><el-icon> <VideoPause /> </el-icon>&ensp;停止</el-button
-              >
+            <div class="input-row">
+              <textarea
+                v-if="sessionState.current"
+                class="textarea"
+                v-model="sessionState.current.newMessage"
+                placeholder="请输入..."
+              ></textarea>
             </div>
           </div>
-          <div class="input-row">
-            <textarea
-              v-if="sessionState.current"
-              class="textarea"
-              v-model="sessionState.current.newMessage"
-              placeholder="请输入..."
-            ></textarea>
-          </div>
-        </div>
-      </template>
-      <template v-else>
-        <el-empty
-          description="请从左侧新增对话以进行对话。"
-          style="margin: auto"
-        ></el-empty>
-      </template>
+        </template>
+        <template v-else>
+          <el-empty
+            description="请从左侧新增对话以进行对话。"
+            style="margin: auto"
+          ></el-empty>
+        </template>
+      </div>
     </div>
 
     <!-- 右侧边栏，待定 -->
@@ -314,6 +316,10 @@ function initChat() {
   const scene = getScene(session.scene_id);
   if (!scene) return;
 
+  // TODO:
+  // 在这里自动选择可用 endpoint，如果没选择的话。
+  // 但是如果已经选择了失效的 endpoint，那么需要提示用户，让用户手动选择可用 endpoint。
+
   chatRef.value = new Chat({
     context: new ChatContext({
       ...formatScene(scene),
@@ -378,30 +384,40 @@ onMounted(async () => {
 
   .center-content {
     flex-grow: 1;
-    background-color: var(--el-bg-color-page);
+    // background-color: var(--el-bg-color-page);
     width: 0px;
   }
 }
 
-.scroll {
+.scroll-y {
   height: 0;
   flex-grow: 1;
-  display: flex;
-  flex-direction: column;
-  overflow-y: auto;
-  overflow-x: hidden;
+}
+
+.scroll-x:deep() {
+  width: 0;
+  flex-grow: 1;
+  .el-scrollbar__view {
+    display: flex;
+  }
 }
 
 .messages {
   padding: 0.5em;
 }
 
+.chat-content {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
 .chat-input-panel {
   display: flex;
   flex-direction: column;
   background-color: var(--el-bg-color);
-  border-top: var(--el-border);
   box-shadow: var(--el-box-shadow-light);
+  // border-top: var(--el-border);
 }
 
 .toolbar-row {
@@ -429,7 +445,7 @@ onMounted(async () => {
     }
 
     .el-select {
-      width: 120px;
+      width: 150px;
     }
   }
 }
@@ -460,41 +476,35 @@ onMounted(async () => {
 
 .scenes-side-bar {
   background-color: var(--el-bg-color);
-  width: 240px;
-  border-right: var(--el-border);
-  box-shadow: var(--el-box-shadow);
+  width: 200px;
   position: relative;
   z-index: 2;
+  // border-right: var(--el-border);
+  box-shadow: var(--el-box-shadow-light);
 
   .scenes {
-    padding: 12px;
+    padding: 0px;
   }
 
   .scene {
     box-sizing: border-box;
     width: 100%;
     background-color: var(--el-bg-color);
-    padding: 12px;
-    margin-bottom: 12px;
-    border-radius: 6px;
-    border: var(--el-border);
-    // border-color: var(--el-border-color);
+    padding: 8px 0px;
+    // margin-bottom: 12px;
     color: var(--el-text-color-primary);
     display: flex;
     align-items: center;
     cursor: pointer;
-    box-shadow: var(--el-box-shadow-light);
+    // border-left: 4px solid var(--el-border-color-light);
+    border-left: 4px solid transparent;
 
     &.is-current {
-      border-left: 3px solid var(--el-color-primary);
+      border-left: 4px solid var(--el-color-primary);
 
-      // color: var(--el-color-primary);
-      // border-color: var(--el-color-primary);
-      // .icon {
-      //   outline: thin solid var(--el-color-primary);
-      // }
       .title {
         font-weight: bold;
+        color: var(--el-color-primary);
       }
     }
 
@@ -502,76 +512,77 @@ onMounted(async () => {
       pointer-events: none;
       border: none;
       background-color: var(--el-fill-color);
+      margin-left: 12px;
     }
 
     .title {
       margin-left: 12px;
-      display: flex;
-      display: block;
       width: 0px;
       flex-grow: 1;
-      border: none;
-      padding: none;
-      margin: none;
-      height: 32px;
-      color: inherit;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-
-      &:focus {
-        outline: none;
-      }
+      font-size: 14px;
+      word-break: break-all;
     }
 
-    .remove {
+    .add {
       margin-left: 12px;
-      display: block;
-      cursor: pointer;
-      color: var(--el-text-color-secondary);
-
+      margin-right: 12px;
+      width: 24px;
+      height: 24px;
+      background-color: var(--el-color-primary-light-8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--el-color-primary);
+      border-radius: 6px;
+      font-size: 14px;
+      transition: 0.3s;
       &:hover {
-        color: var(--el-color-error);
+        background-color: var(--el-color-primary);
+        color: var(--el-fill-color);
       }
     }
   }
 }
 
-.sessions-side-bar {
+.sessions-top-bar {
   background-color: var(--el-bg-color);
-  width: 240px;
-  border-right: var(--el-border);
-  box-shadow: var(--el-box-shadow);
+  width: 100%;
+  height: 39px;
   position: relative;
+  flex-shrink: 0;
   z-index: 1;
+  box-shadow: var(--el-box-shadow-light);
+  // border-bottom: var(--el-border);
+  display: flex;
 
   .sessions {
-    padding: 12px;
+    flex-grow: 1;
+    height: 39px;
+    display: flex;
+    width: max-content;
+    flex-shrink: 0;
+    flex-direction: row-reverse;
+  }
+
+  .session.placeholder-session {
+    flex-grow: 1;
+    border-top: 3px solid transparent;
   }
 
   .session {
-    box-sizing: border-box;
-    width: 100%;
-    background-color: var(--el-bg-color);
-    padding: 12px;
-    margin-bottom: 12px;
-    border-radius: 6px;
-    border: var(--el-border);
-    // border-color: var(--el-border-color);
-    color: var(--el-text-color-primary);
     display: flex;
     align-items: center;
     cursor: pointer;
-    box-shadow: var(--el-box-shadow-light);
+    padding: 6px;
+    // border-top: 3px solid var(--el-border-color-light);
+    border-top: 3px solid transparent;
+    // border-right: var(--el-border);
+    // border-bottom: var(--el-border);
+    // border-radius: 6px 6px 0 0;
 
     &.is-current {
-      border-left: 3px solid var(--el-color-success);
-
-      // color: var(--el-color-success);
-      // border-color: var(--el-color-success);
-      // .icon {
-      //   outline: thin solid var(--el-color-success);
-      // }
+      border-top: 3px solid var(--el-color-primary);
+      border-bottom-color: transparent;
       .title {
         font-weight: bold;
         background-color: unset;
@@ -580,21 +591,19 @@ onMounted(async () => {
 
     .icon {
       border: none;
-      background-color: var(--el-fill-color);
+      font-size: 12px;
+      background-color: var(--el-bg-color-page);
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
     }
 
     .title {
-      margin-left: 12px;
-      display: flex;
-      display: block;
-      width: 0px;
-      flex-grow: 1;
-      border: none;
-      padding: none;
-      margin: none;
-      height: 32px;
-      color: inherit;
-      cursor: pointer;
+      margin-left: 6px;
+      font-size: 12px;
 
       &:focus {
         outline: none;
@@ -602,7 +611,7 @@ onMounted(async () => {
     }
 
     .remove {
-      margin-left: 12px;
+      margin-left: 6px;
       display: block;
       cursor: pointer;
       color: var(--el-text-color-secondary);
@@ -613,8 +622,12 @@ onMounted(async () => {
     }
   }
 
-  .add-session {
-    margin: 12px;
+  .empty {
+    display: flex;
+    align-items: center;
+    padding: 6px;
+    font-size: 12px;
+    color: var(--el-text-color-secondary);
   }
 }
 </style>

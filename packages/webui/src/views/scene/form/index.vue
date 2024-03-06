@@ -72,6 +72,7 @@
         "
         :is="MODELS_FORMS_MAP[formState.form.model_key].MODEL_CONFIG_FORM"
         :model_config="formState.form.model_config"
+        :model_key="formState.form.model_key"
       >
       </component>
 

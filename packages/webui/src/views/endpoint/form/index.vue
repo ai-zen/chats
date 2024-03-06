@@ -58,6 +58,7 @@
         "
         :is="MODELS_FORMS_MAP[formState.form.model_key].ENDPOINT_CONFIG_FORM"
         :endpoint_config="formState.form.endpoint_config"
+        :model_key="formState.form.model_key"
       >
       </component>
 

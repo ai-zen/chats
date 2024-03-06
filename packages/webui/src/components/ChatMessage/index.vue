@@ -204,7 +204,6 @@ async function onCopyClick() {
 
   .message-content {
     display: block;
-    background-color: var(--el-bg-color);
     width: max-content;
     height: max-content;
     padding: 0.75em 1em;
@@ -212,6 +211,7 @@ async function onCopyClick() {
     max-width: calc(100% - 100px);
     box-sizing: border-box;
     line-height: 1.5em;
+    background-color: var(--el-bg-color-page);
 
     .dark & {
       box-shadow: var(--el-box-shadow-light);
