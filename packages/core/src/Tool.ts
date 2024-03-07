@@ -1,5 +1,6 @@
 import { ChatAL } from "./ChatAL.js";
 import { PickRequired } from "./Common.js";
+import { FunctionCallContext } from "./FunctionCallContext.js";
 
 export class Tool implements ChatAL.Tool {
   type: "function";
@@ -15,13 +16,13 @@ export class Tool implements ChatAL.Tool {
     this.callback = options.callback;
   }
 
-  async exec(parsedArgs: any) {
+  async exec(ctx: FunctionCallContext) {
     let result;
 
     // 如果工具定义了回调函数
     if (this.callback) {
       // 直接执行回调函数
-      result = await this.callback(parsedArgs);
+      result = await this.callback(ctx.parsedArgs).bind(ctx);
     }
 
     // 如果工具定义了代码
@@ -31,14 +32,16 @@ export class Tool implements ChatAL.Tool {
       let intactArgs = Object.fromEntries(
         Object.keys(this.function.parameters.properties!).map((key) => [
           key,
-          parsedArgs[key],
+          ctx.parsedArgs[key],
         ])
       );
 
       // 创建一个新函数并执行
-      result = await new Function(...Object.keys(intactArgs), this.code)(
-        ...Object.values(intactArgs)
-      );
+      const fun = await new Function(
+        ...Object.keys(intactArgs),
+        this.code
+      ).bind(ctx);
+      result = fun(...Object.values(intactArgs));
     }
 
     // 如果结果已经是字符串就直接返回，否则用JSON序列化一遍。
