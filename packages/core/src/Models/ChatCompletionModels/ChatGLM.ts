@@ -75,8 +75,8 @@ export abstract class ChatGLM extends ChatGPT<
       };
 
       const jwt = await new SignJWT(payload)
-        .setProtectedHeader({ alg: "HS256", sign_type: "SIGN" }) // 设置头部信息
-        .sign(new TextEncoder().encode(secret)); // 使用 secret 进行签名
+        .setProtectedHeader({ alg: "HS256", sign_type: "SIGN" })
+        .sign(new TextEncoder().encode(secret));
 
       return jwt;
     } catch (error) {

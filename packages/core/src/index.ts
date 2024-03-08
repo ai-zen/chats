@@ -10,4 +10,3 @@ export * from "./Message.js";
 export * from "./Scene.js";
 export * from "./Tool.js";
 export * from "./VectorDatabase.js";
-export * from "./Error.js";

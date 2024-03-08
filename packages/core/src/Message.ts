@@ -1,6 +1,9 @@
 import { ChatAL } from "./ChatAL.js";
 import { PickRequired } from "./Common.js";
 
+/**
+ * Represents a message in a AI chat conversation.
+ */
 export class Message implements ChatAL.Message {
   name?: string | undefined;
   content?: string | ChatAL.MessageContentSection[];
@@ -13,6 +16,9 @@ export class Message implements ChatAL.Message {
   hidden?: boolean | undefined;
   omit?: boolean | undefined;
 
+  /**
+   * Creates an instance of the Message class.
+   */
   constructor(options: PickRequired<Message | "role">) {
     if (!options.role) throw new Error("Message must have a role");
     this.name = options.name;
@@ -28,63 +34,60 @@ export class Message implements ChatAL.Message {
   }
 
   /**
-   * 创建系统消息
+   * Creates a system message.
    */
-  static System(content = ""): ChatAL.Message {
-    return {
+  static System(content = "") {
+    return new Message({
       role: ChatAL.Role.System,
       content,
       status: ChatAL.MessageStatus.Completed,
-    };
+    });
   }
 
   /**
-   * 创建助手消息，默认为待定状态
+   * Creates an assistant message with a default pending status.
    */
-  static Assistant(content = ""): ChatAL.Message {
-    return {
+  static Assistant(content = "") {
+    return new Message({
       role: ChatAL.Role.Assistant,
       content,
       status: ChatAL.MessageStatus.Pending,
-    };
+    });
   }
 
   /**
-   * 创建用户消息
+   * Creates a user message.
    */
-  static User(content = ""): ChatAL.Message {
-    return {
+  static User(content = "") {
+    return new Message({
       role: ChatAL.Role.User,
       content,
       status: ChatAL.MessageStatus.Completed,
-    };
+    });
   }
 
   /**
-   * 创建工具结果消息
+   * Creates a tool result message.
    */
-  static Tool(tool_call: ChatAL.ToolCall, result = ""): ChatAL.Message {
-    return {
+  static Tool(tool_call: ChatAL.ToolCall, result = "") {
+    return new Message({
       role: ChatAL.Role.Tool,
       tool_call_id: tool_call.id,
       name: tool_call.function!.name,
       content: result,
       status: ChatAL.MessageStatus.Pending,
-    };
+    });
   }
 
   /**
-   * 创建函数结果消息
+   * Creates a function result message.
    */
-  static Function(
-    function_call: ChatAL.FunctionCall,
-    result = ""
-  ): ChatAL.Message {
-    return {
+  static Function(function_call: ChatAL.FunctionCall, result = "") {
+    return new Message({
       role: ChatAL.Role.Function,
       name: function_call!.name,
       content: result,
       status: ChatAL.MessageStatus.Pending,
-    };
+    });
   }
 }

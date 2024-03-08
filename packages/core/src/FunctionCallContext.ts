@@ -2,25 +2,36 @@ import { Chat } from "./Chat";
 import { ChatAL } from "./ChatAL";
 
 /**
- * 函数调用上下文，包含函数调用入参、聊天实例、等关键信息
+ * Executable function define
+ */
+export interface ExecutableFunctionDefine {
+  exec(ctx: FunctionCallContext): Promise<string>;
+}
+
+/**
+ * Function calling context
  */
 export class FunctionCallContext {
-  chatInstance: Chat;
-  functionCall: ChatAL.FunctionCall;
-  parsedArgs: any;
-  isPreventDefault = false;
+  chat_instance: Chat;
+  function_call: ChatAL.FunctionCall;
+  parsed_args: any;
+  is_prevent_default = false;
 
   constructor(options: {
-    chatInstance: Chat;
-    functionCall: ChatAL.FunctionCall;
-    parsedArgs: any;
+    chat_instance: Chat;
+    function_call: ChatAL.FunctionCall;
   }) {
-    this.chatInstance = options.chatInstance;
-    this.functionCall = options.functionCall;
-    this.parsedArgs = options.parsedArgs;
+    this.chat_instance = options.chat_instance;
+    this.function_call = options.function_call;
+    this.parsed_args = options.function_call.arguments
+      ? JSON.parse(options.function_call.arguments)
+      : undefined;
   }
 
+  /**
+   * Usually used to mark blocking the next round of chat.
+   */
   preventDefault() {
-    this.isPreventDefault = true;
+    this.is_prevent_default = true;
   }
 }

@@ -1,12 +1,15 @@
 import { ChatAL } from "./ChatAL.js";
 import { PickRequired } from "./Common.js";
-import { FunctionCallContext } from "./FunctionCallContext.js";
+import {
+  ExecutableFunctionDefine,
+  FunctionCallContext,
+} from "./FunctionCallContext.js";
 
-export class Tool implements ChatAL.Tool {
+export class Tool implements ChatAL.Tool, ExecutableFunctionDefine {
   type: "function";
   function: ChatAL.FunctionDefine;
   code?: string;
-  callback?: (parsedArgs: any) => any;
+  callback?: (parsed_args: any) => any;
 
   constructor(options: PickRequired<Tool, "function">) {
     if (!options.function) throw new Error("Tool must have a function");
@@ -19,38 +22,35 @@ export class Tool implements ChatAL.Tool {
   async exec(ctx: FunctionCallContext) {
     let result;
 
-    // 如果工具定义了回调函数
+    // If the tool has a callback function
     if (this.callback) {
-      // 直接执行回调函数
-      result = await this.callback(ctx.parsedArgs).bind(ctx);
+      // Execute the callback function
+      result = await this.callback.call(ctx, ctx.parsed_args);
     }
 
-    // 如果工具定义了代码
+    // If the tool has code
     if (this.code) {
-      // 根据函数参数定义构造一个新的参数对象。
-      // 确保参数对象中不会缺少任何键，如果缺少某些键可能会在后续执行过程中引起 `x is no defined` 错误。
-      let intactArgs = Object.fromEntries(
+      // Construct a new parameter object based on the function parameters definition
+      // Make sure that the parameter object does not have any missing keys, as missing keys may cause "x is not defined" errors during execution
+      const wideArgs = Object.fromEntries(
         Object.keys(this.function.parameters.properties!).map((key) => [
           key,
-          ctx.parsedArgs[key],
+          ctx.parsed_args[key],
         ])
       );
 
-      // 创建一个新函数并执行
-      const fun = await new Function(
-        ...Object.keys(intactArgs),
-        this.code
-      ).bind(ctx);
-      result = fun(...Object.values(intactArgs));
+      // Create a new function and execute it
+      const fun = new Function(...Object.keys(wideArgs), this.code);
+      result = await fun.call(ctx, ...Object.values(wideArgs));
     }
 
-    // 如果结果已经是字符串就直接返回，否则用JSON序列化一遍。
-    if (typeof result == "string") {
-      return result;
-    } else {
-      return JSON.stringify(result);
+    // If the result is already a string, return it as is. Otherwise, serialize it using JSON.stringify().
+    // Note that even if the result is undefined, it is a valid value and still needs to be serialized before returning
+    if (typeof result !== "string") {
+      result = JSON.stringify(result);
     }
 
-    // 注意即使结果是 result 是 undefined，也属于合法的值，也需要序列化后返回
+    // Return the result
+    return result;
   }
 }

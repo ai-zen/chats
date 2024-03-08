@@ -20,20 +20,10 @@ export namespace ChatAL {
 
   export enum MessageStatus {
     Unknown = "unknown",
-
-    /** 待定，通常代表还处于请求连接中 */
     Pending = "pending",
-
-    /** 已完成 */
     Completed = "completed",
-
-    /** 发生错误 */
     Error = "error",
-
-    /** 已中止 */
     Aborted = "aborted",
-
-    /** 输出中 */
     Writing = "writing",
   }
 
@@ -133,7 +123,7 @@ export namespace ChatAL {
 
   export interface Tool extends ToolDefine {
     code?: string;
-    callback?: (parsedArgs: any) => any;
+    callback?: (parsed_args: any) => any;
   }
 
   export interface Agent extends ToolDefine, ChatContext {}

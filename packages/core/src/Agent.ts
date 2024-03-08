@@ -2,13 +2,28 @@ import { Chat } from "./Chat.js";
 import { ChatAL } from "./ChatAL.js";
 import { ChatContext } from "./ChatContext.js";
 import { PickRequired } from "./Common.js";
-import { FunctionCallContext } from "./FunctionCallContext.js";
+import {
+  ExecutableFunctionDefine,
+  FunctionCallContext,
+} from "./FunctionCallContext.js";
 import { Message } from "./Message.js";
 
-export class Agent extends ChatContext implements ChatAL.Agent {
+/**
+ * Agent class represents an agent that can execute a function in a chat context.
+ * It inherits the ChatContext class and implements the ChatAL.Agent interface.
+ */
+export class Agent
+  extends ChatContext
+  implements ChatAL.Agent, ExecutableFunctionDefine
+{
   type: "function";
   function: ChatAL.FunctionDefine;
 
+  /**
+   * Constructor for Agent class.
+   * @param options - The options object.
+   * @throws {Error} If the agent must have a function.
+   */
   constructor(options: PickRequired<Agent, "function" | "model_key">) {
     if (!options.function) throw new Error("Agent must have a function");
     super(options);
@@ -16,65 +31,73 @@ export class Agent extends ChatContext implements ChatAL.Agent {
     this.function = options.function;
   }
 
-  async exec(ctx: FunctionCallContext) {
-    // 克隆一个新的代理用于执行
-    const agentContext = new Agent({ ...this });
+  /**
+   * Executes the agent's function with the given function call context.
+   * @param functionCallContext - The function call context.
+   * @returns {Promise<string>} The result of the function execution.
+   */
+  async exec(functionCallContext: FunctionCallContext): Promise<string> {
+    // Clone a new agent for execution
+    const clonedAgent = new Agent({ ...this });
 
-    // 将参数注入到克隆代理的消息列表
-    agentContext.messages = Agent.intoMessagesWithParsedArgs(
-      agentContext.messages,
-      ctx.parsedArgs
+    // Inject the arguments into the cloned agent's message list
+    clonedAgent.messages = Agent.intoMessagesWithParsedArgs(
+      clonedAgent.messages,
+      functionCallContext.parsed_args
     );
 
-    // 创建代理聊天
+    // Create a chat for the agent
     const agentChat = new Chat({
-      context: agentContext,
-      // 继承父聊天的服务端映射
-      endpoints: ctx.chatInstance.endpoints,
+      context: clonedAgent,
+      // Inherit the endpoints from the parent chat
+      endpoints: functionCallContext.chat_instance.endpoints,
     });
 
-    // 从预设消息列表中找到用户提问消息
+    // Find the user message from the pre-defined message list
     const userMessage = agentChat.context.messages.findLast(
       (x) => x.role == ChatAL.Role.User
     );
 
-    // 创建一个助手回复消息
+    // Create an assistant reply message
     const assistantMessage = Message.Assistant();
-    agentContext.messages.push(assistantMessage);
+    clonedAgent.messages.push(assistantMessage);
 
-    // 如果查询到参考资料就插入到提问之前
-    const references = await agentChat.queryKnowledgeBases(
+    // If references are found, insert them before the user question
+    const references = await agentChat.queryKnowledge(
       userMessage?.content as string
     );
     if (references) {
       const referencesMessage = Message.User(references);
       referencesMessage.hidden = true;
-      agentContext.messages.splice(
-        agentContext.messages.length - 2,
+      clonedAgent.messages.splice(
+        clonedAgent.messages.length - 2,
         0,
         referencesMessage
       );
     }
 
-    // 发送代理聊天到服务器
+    // Send the agent chat to the server
     await agentChat.send();
 
-    // 将代理聊天的最后一个消息作为返回结果
-    return agentContext.messages.at(-1)?.content; // TODO: 需要提前在代理设置里面告诉语言模型按特定格式返回内容。
+    // Return the last message content of the agent chat as the result
+    return clonedAgent.messages.at(-1)?.content as string;
   }
 
   /**
-   * 根据键值对替换字符串
+   * Replace template string with values from the given record.
+   * @param template - The template string.
+   * @param valueMap - The record containing key-value pairs for replacement.
+   * @returns {string} The replaced string.
    */
   static replaceStringWithValues(
     template: string,
-    record: Record<string, any>
+    valueMap: Record<string, any>
   ): string {
     const regex = /{{\s?(\w+)\s?}}/g;
 
     const replacedString = template.replace(regex, (_, key) => {
-      if (record.hasOwnProperty(key)) {
-        return record[key];
+      if (valueMap.hasOwnProperty(key)) {
+        return valueMap[key];
       } else {
         return `{{ ${key} }}`;
       }
@@ -84,18 +107,21 @@ export class Agent extends ChatContext implements ChatAL.Agent {
   }
 
   /**
-   * 根据参数格式化消息，将参数替换到消息中
+   * Format the messages by replacing the parameters in the messages with their parsed values.
+   * @param messages - The list of messages.
+   * @param parsed_args - The parsed arguments.
+   * @returns {ChatAL.Message[]} The formatted messages.
    */
   static intoMessagesWithParsedArgs(
     messages: ChatAL.Message[],
-    parsedArgs: any
+    parsed_args: any
   ): ChatAL.Message[] {
     return JSON.parse(JSON.stringify(messages)).map(
       (message: ChatAL.Message) => ({
         ...message,
         content:
           typeof message.content == "string"
-            ? Agent.replaceStringWithValues(message.content, parsedArgs)
+            ? Agent.replaceStringWithValues(message.content, parsed_args)
             : message.content,
       })
     );
