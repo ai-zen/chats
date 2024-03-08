@@ -11,6 +11,7 @@ import {
   EmbeddingModels,
   ModelsKeys,
 } from "./Models/index.js";
+import { FunctionCallContext } from "./FunctionCallContext.js";
 
 export class Chat {
   context: ChatContext;
@@ -346,8 +347,13 @@ export class Chat {
   async getFunctionCallResult(fc: ChatAL.FunctionCall) {
     if (!fc.name) return;
 
-    // 解析函数调用的参数
-    const parsedArgs = fc.arguments ? JSON.parse(fc.arguments) : undefined;
+    // 创建函数调用上下文
+    const ctx = new FunctionCallContext({
+      chatInstance: this,
+      functionCall: fc,
+      // 解析函数调用的参数
+      parsedArgs: fc.arguments ? JSON.parse(fc.arguments) : undefined,
+    });
 
     // 查找与函数调用相匹配的代理
     const agent = this.context.agents.find(
@@ -360,10 +366,10 @@ export class Chat {
     );
 
     // 如果找到代理
-    if (agent) return agent.exec(parsedArgs, this);
+    if (agent) return agent.exec(ctx);
 
     // 如果找到工具
-    if (tool) return tool.exec(parsedArgs);
+    if (tool) return tool.exec(ctx);
   }
 
   /**

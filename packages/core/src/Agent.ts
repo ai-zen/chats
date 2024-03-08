@@ -2,6 +2,7 @@ import { Chat } from "./Chat.js";
 import { ChatAL } from "./ChatAL.js";
 import { ChatContext } from "./ChatContext.js";
 import { PickRequired } from "./Common.js";
+import { FunctionCallContext } from "./FunctionCallContext.js";
 import { Message } from "./Message.js";
 
 export class Agent extends ChatContext implements ChatAL.Agent {
@@ -15,21 +16,21 @@ export class Agent extends ChatContext implements ChatAL.Agent {
     this.function = options.function;
   }
 
-  async exec(parsedArgs: any, parentChat: Chat) {
+  async exec(ctx: FunctionCallContext) {
     // 克隆一个新的代理用于执行
     const agentContext = new Agent({ ...this });
 
     // 将参数注入到克隆代理的消息列表
     agentContext.messages = Agent.intoMessagesWithParsedArgs(
       agentContext.messages,
-      parsedArgs
+      ctx.parsedArgs
     );
 
     // 创建代理聊天
     const agentChat = new Chat({
       context: agentContext,
       // 继承父聊天的服务端映射
-      endpoints: parentChat.endpoints,
+      endpoints: ctx.chatInstance.endpoints,
     });
 
     // 从预设消息列表中找到用户提问消息
