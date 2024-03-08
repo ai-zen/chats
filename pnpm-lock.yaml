@@ -16,7 +16,7 @@ importers:
         specifier: ^2.1.4
         version: 2.1.4
       jose:
-        specifier: ^5.2.2
+        specifier: ^5
         version: 5.2.2
     devDependencies:
       '@types/json-schema':
@@ -136,7 +136,7 @@ packages:
     dev: false
 
   /@esbuild/aix-ppc64@0.19.12:
-    resolution: {integrity: sha1-0bwGrttpNrO20xO/gJpaQDh9K38=, tarball: '@esbuild/aix-ppc64/download/@esbuild/aix-ppc64-0.19.12.tgz'}
+    resolution: {integrity: sha1-0bwGrttpNrO20xO/gJpaQDh9K38=, tarball: http://registry.m.jd.com/@esbuild/aix-ppc64/download/@esbuild/aix-ppc64-0.19.12.tgz}
     engines: {node: '>=12'}
     cpu: [ppc64]
     os: [aix]
@@ -145,7 +145,7 @@ packages:
     optional: true
 
   /@esbuild/android-arm64@0.19.12:
-    resolution: {integrity: sha1-etZaNs/bfg1CnDU+APaA1zfCrtQ=, tarball: '@esbuild/android-arm64/download/@esbuild/android-arm64-0.19.12.tgz'}
+    resolution: {integrity: sha1-etZaNs/bfg1CnDU+APaA1zfCrtQ=, tarball: http://registry.m.jd.com/@esbuild/android-arm64/download/@esbuild/android-arm64-0.19.12.tgz}
     engines: {node: '>=12'}
     cpu: [arm64]
     os: [android]
@@ -154,7 +154,7 @@ packages:
     optional: true
 
   /@esbuild/android-arm@0.19.12:
-    resolution: {integrity: sha1-sMJlNvN3dhYsqL3iXkIEDCA/KCQ=, tarball: '@esbuild/android-arm/download/@esbuild/android-arm-0.19.12.tgz'}
+    resolution: {integrity: sha1-sMJlNvN3dhYsqL3iXkIEDCA/KCQ=, tarball: http://registry.m.jd.com/@esbuild/android-arm/download/@esbuild/android-arm-0.19.12.tgz}
     engines: {node: '>=12'}
     cpu: [arm]
     os: [android]
@@ -163,7 +163,7 @@ packages:
     optional: true
 
   /@esbuild/android-x64@0.19.12:
-    resolution: {integrity: sha1-yxPiIRKCASGU2Jvzv+dyEnNHOz0=, tarball: '@esbuild/android-x64/download/@esbuild/android-x64-0.19.12.tgz'}
+    resolution: {integrity: sha1-yxPiIRKCASGU2Jvzv+dyEnNHOz0=, tarball: http://registry.m.jd.com/@esbuild/android-x64/download/@esbuild/android-x64-0.19.12.tgz}
     engines: {node: '>=12'}
     cpu: [x64]
     os: [android]
@@ -172,7 +172,7 @@ packages:
     optional: true
 
   /@esbuild/darwin-arm64@0.19.12:
-    resolution: {integrity: sha1-y+5B6YgCDUtRbp2eRN0pIAmWJ14=, tarball: '@esbuild/darwin-arm64/download/@esbuild/darwin-arm64-0.19.12.tgz'}
+    resolution: {integrity: sha1-y+5B6YgCDUtRbp2eRN0pIAmWJ14=, tarball: http://registry.m.jd.com/@esbuild/darwin-arm64/download/@esbuild/darwin-arm64-0.19.12.tgz}
     engines: {node: '>=12'}
     cpu: [arm64]
     os: [darwin]
@@ -181,7 +181,7 @@ packages:
     optional: true
 
   /@esbuild/darwin-x64@0.19.12:
-    resolution: {integrity: sha1-432WMyRtUq7PSR7pFuznCfnV9M0=, tarball: '@esbuild/darwin-x64/download/@esbuild/darwin-x64-0.19.12.tgz'}
+    resolution: {integrity: sha1-432WMyRtUq7PSR7pFuznCfnV9M0=, tarball: http://registry.m.jd.com/@esbuild/darwin-x64/download/@esbuild/darwin-x64-0.19.12.tgz}
     engines: {node: '>=12'}
     cpu: [x64]
     os: [darwin]
@@ -190,7 +190,7 @@ packages:
     optional: true
 
   /@esbuild/freebsd-arm64@0.19.12:
-    resolution: {integrity: sha1-HuTYtoLtNjsIr3TR6isrTbunZIc=, tarball: '@esbuild/freebsd-arm64/download/@esbuild/freebsd-arm64-0.19.12.tgz'}
+    resolution: {integrity: sha1-HuTYtoLtNjsIr3TR6isrTbunZIc=, tarball: http://registry.m.jd.com/@esbuild/freebsd-arm64/download/@esbuild/freebsd-arm64-0.19.12.tgz}
     engines: {node: '>=12'}
     cpu: [arm64]
     os: [freebsd]
@@ -199,7 +199,7 @@ packages:
     optional: true
 
   /@esbuild/freebsd-x64@0.19.12:
-    resolution: {integrity: sha1-N6aTVT1C/3fNcSZ2S1NftswooRw=, tarball: '@esbuild/freebsd-x64/download/@esbuild/freebsd-x64-0.19.12.tgz'}
+    resolution: {integrity: sha1-N6aTVT1C/3fNcSZ2S1NftswooRw=, tarball: http://registry.m.jd.com/@esbuild/freebsd-x64/download/@esbuild/freebsd-x64-0.19.12.tgz}
     engines: {node: '>=12'}
     cpu: [x64]
     os: [freebsd]
@@ -208,7 +208,7 @@ packages:
     optional: true
 
   /@esbuild/linux-arm64@0.19.12:
-    resolution: {integrity: sha1-vpsUWYXsbFdHDg4FHYh7Cd3bLUs=, tarball: '@esbuild/linux-arm64/download/@esbuild/linux-arm64-0.19.12.tgz'}
+    resolution: {integrity: sha1-vpsUWYXsbFdHDg4FHYh7Cd3bLUs=, tarball: http://registry.m.jd.com/@esbuild/linux-arm64/download/@esbuild/linux-arm64-0.19.12.tgz}
     engines: {node: '>=12'}
     cpu: [arm64]
     os: [linux]
@@ -217,7 +217,7 @@ packages:
     optional: true
 
   /@esbuild/linux-arm@0.19.12:
-    resolution: {integrity: sha1-IH7NmCqNuV97UnkgfQ/yMxrPXu8=, tarball: '@esbuild/linux-arm/download/@esbuild/linux-arm-0.19.12.tgz'}
+    resolution: {integrity: sha1-IH7NmCqNuV97UnkgfQ/yMxrPXu8=, tarball: http://registry.m.jd.com/@esbuild/linux-arm/download/@esbuild/linux-arm-0.19.12.tgz}
     engines: {node: '>=12'}
     cpu: [arm]
     os: [linux]
@@ -226,7 +226,7 @@ packages:
     optional: true
 
   /@esbuild/linux-ia32@0.19.12:
-    resolution: {integrity: sha1-0NhrXKFWJSPcKEpnIyk6UtWGBgE=, tarball: '@esbuild/linux-ia32/download/@esbuild/linux-ia32-0.19.12.tgz'}
+    resolution: {integrity: sha1-0NhrXKFWJSPcKEpnIyk6UtWGBgE=, tarball: http://registry.m.jd.com/@esbuild/linux-ia32/download/@esbuild/linux-ia32-0.19.12.tgz}
     engines: {node: '>=12'}
     cpu: [ia32]
     os: [linux]
@@ -235,7 +235,7 @@ packages:
     optional: true
 
   /@esbuild/linux-loong64@0.19.12:
-    resolution: {integrity: sha1-mjf4f+xLhAjmgrUoOR+iKv2VIpk=, tarball: '@esbuild/linux-loong64/download/@esbuild/linux-loong64-0.19.12.tgz'}
+    resolution: {integrity: sha1-mjf4f+xLhAjmgrUoOR+iKv2VIpk=, tarball: http://registry.m.jd.com/@esbuild/linux-loong64/download/@esbuild/linux-loong64-0.19.12.tgz}
     engines: {node: '>=12'}
     cpu: [loong64]
     os: [linux]
@@ -244,7 +244,7 @@ packages:
     optional: true
 
   /@esbuild/linux-mips64el@0.19.12:
-    resolution: {integrity: sha1-Td69Tm7rogtQnY50yOMNis4Liew=, tarball: '@esbuild/linux-mips64el/download/@esbuild/linux-mips64el-0.19.12.tgz'}
+    resolution: {integrity: sha1-Td69Tm7rogtQnY50yOMNis4Liew=, tarball: http://registry.m.jd.com/@esbuild/linux-mips64el/download/@esbuild/linux-mips64el-0.19.12.tgz}
     engines: {node: '>=12'}
     cpu: [mips64el]
     os: [linux]
@@ -253,7 +253,7 @@ packages:
     optional: true
 
   /@esbuild/linux-ppc64@0.19.12:
-    resolution: {integrity: sha1-rbZ9rbc2VoSfY81SL17LNR3Y3ug=, tarball: '@esbuild/linux-ppc64/download/@esbuild/linux-ppc64-0.19.12.tgz'}
+    resolution: {integrity: sha1-rbZ9rbc2VoSfY81SL17LNR3Y3ug=, tarball: http://registry.m.jd.com/@esbuild/linux-ppc64/download/@esbuild/linux-ppc64-0.19.12.tgz}
     engines: {node: '>=12'}
     cpu: [ppc64]
     os: [linux]
@@ -262,7 +262,7 @@ packages:
     optional: true
 
   /@esbuild/linux-riscv64@0.19.12:
-    resolution: {integrity: sha1-EbwGmL8KKr+HJ/HHrOIRJhLBWt8=, tarball: '@esbuild/linux-riscv64/download/@esbuild/linux-riscv64-0.19.12.tgz'}
+    resolution: {integrity: sha1-EbwGmL8KKr+HJ/HHrOIRJhLBWt8=, tarball: http://registry.m.jd.com/@esbuild/linux-riscv64/download/@esbuild/linux-riscv64-0.19.12.tgz}
     engines: {node: '>=12'}
     cpu: [riscv64]
     os: [linux]
@@ -271,7 +271,7 @@ packages:
     optional: true
 
   /@esbuild/linux-s390x@0.19.12:
-    resolution: {integrity: sha1-6G+4/7p8XJK6kfw7J+1acBlsPMg=, tarball: '@esbuild/linux-s390x/download/@esbuild/linux-s390x-0.19.12.tgz'}
+    resolution: {integrity: sha1-6G+4/7p8XJK6kfw7J+1acBlsPMg=, tarball: http://registry.m.jd.com/@esbuild/linux-s390x/download/@esbuild/linux-s390x-0.19.12.tgz}
     engines: {node: '>=12'}
     cpu: [s390x]
     os: [linux]
@@ -280,7 +280,7 @@ packages:
     optional: true
 
   /@esbuild/linux-x64@0.19.12:
-    resolution: {integrity: sha1-XzfP3HBa6mh9/l377AhqBaz+nHg=, tarball: '@esbuild/linux-x64/download/@esbuild/linux-x64-0.19.12.tgz'}
+    resolution: {integrity: sha1-XzfP3HBa6mh9/l377AhqBaz+nHg=, tarball: http://registry.m.jd.com/@esbuild/linux-x64/download/@esbuild/linux-x64-0.19.12.tgz}
     engines: {node: '>=12'}
     cpu: [x64]
     os: [linux]
@@ -289,7 +289,7 @@ packages:
     optional: true
 
   /@esbuild/netbsd-x64@0.19.12:
-    resolution: {integrity: sha1-KdpWanUyTg0N1+R1GbovfvFoZXs=, tarball: '@esbuild/netbsd-x64/download/@esbuild/netbsd-x64-0.19.12.tgz'}
+    resolution: {integrity: sha1-KdpWanUyTg0N1+R1GbovfvFoZXs=, tarball: http://registry.m.jd.com/@esbuild/netbsd-x64/download/@esbuild/netbsd-x64-0.19.12.tgz}
     engines: {node: '>=12'}
     cpu: [x64]
     os: [netbsd]
@@ -298,7 +298,7 @@ packages:
     optional: true
 
   /@esbuild/openbsd-x64@0.19.12:
-    resolution: {integrity: sha1-MGwKy9tamclb6YvdHUfJFufcP/A=, tarball: '@esbuild/openbsd-x64/download/@esbuild/openbsd-x64-0.19.12.tgz'}
+    resolution: {integrity: sha1-MGwKy9tamclb6YvdHUfJFufcP/A=, tarball: http://registry.m.jd.com/@esbuild/openbsd-x64/download/@esbuild/openbsd-x64-0.19.12.tgz}
     engines: {node: '>=12'}
     cpu: [x64]
     os: [openbsd]
@@ -307,7 +307,7 @@ packages:
     optional: true
 
   /@esbuild/sunos-x64@0.19.12:
-    resolution: {integrity: sha1-CTPqq5r4ubLJMCNvYqrj/Fk/rzA=, tarball: '@esbuild/sunos-x64/download/@esbuild/sunos-x64-0.19.12.tgz'}
+    resolution: {integrity: sha1-CTPqq5r4ubLJMCNvYqrj/Fk/rzA=, tarball: http://registry.m.jd.com/@esbuild/sunos-x64/download/@esbuild/sunos-x64-0.19.12.tgz}
     engines: {node: '>=12'}
     cpu: [x64]
     os: [sunos]
@@ -316,7 +316,7 @@ packages:
     optional: true
 
   /@esbuild/win32-arm64@0.19.12:
-    resolution: {integrity: sha1-dzvbqhlxs22y9lYAiGOczR5nc64=, tarball: '@esbuild/win32-arm64/download/@esbuild/win32-arm64-0.19.12.tgz'}
+    resolution: {integrity: sha1-dzvbqhlxs22y9lYAiGOczR5nc64=, tarball: http://registry.m.jd.com/@esbuild/win32-arm64/download/@esbuild/win32-arm64-0.19.12.tgz}
     engines: {node: '>=12'}
     cpu: [arm64]
     os: [win32]
@@ -325,7 +325,7 @@ packages:
     optional: true
 
   /@esbuild/win32-ia32@0.19.12:
-    resolution: {integrity: sha1-AAUWytBjVMyEpz8JQ6SqaQ72/Wc=, tarball: '@esbuild/win32-ia32/download/@esbuild/win32-ia32-0.19.12.tgz'}
+    resolution: {integrity: sha1-AAUWytBjVMyEpz8JQ6SqaQ72/Wc=, tarball: http://registry.m.jd.com/@esbuild/win32-ia32/download/@esbuild/win32-ia32-0.19.12.tgz}
     engines: {node: '>=12'}
     cpu: [ia32]
     os: [win32]
@@ -334,7 +334,7 @@ packages:
     optional: true
 
   /@esbuild/win32-x64@0.19.12:
-    resolution: {integrity: sha1-xXyK+7QFSjq4MXWRoLcyA2C0RK4=, tarball: '@esbuild/win32-x64/download/@esbuild/win32-x64-0.19.12.tgz'}
+    resolution: {integrity: sha1-xXyK+7QFSjq4MXWRoLcyA2C0RK4=, tarball: http://registry.m.jd.com/@esbuild/win32-x64/download/@esbuild/win32-x64-0.19.12.tgz}
     engines: {node: '>=12'}
     cpu: [x64]
     os: [win32]
@@ -379,14 +379,14 @@ packages:
     dev: false
 
   /@pkgjs/parseargs@0.11.0:
-    resolution: {integrity: sha1-p36nQvqyV3UUVDTrHSMoz1ATrDM=, tarball: '@pkgjs/parseargs/download/@pkgjs/parseargs-0.11.0.tgz'}
+    resolution: {integrity: sha1-p36nQvqyV3UUVDTrHSMoz1ATrDM=, tarball: http://registry.m.jd.com/@pkgjs/parseargs/download/@pkgjs/parseargs-0.11.0.tgz}
     engines: {node: '>=14'}
     requiresBuild: true
     dev: true
     optional: true
 
   /@rollup/rollup-android-arm-eabi@4.12.0:
-    resolution: {integrity: sha1-OMOr0ZVaPCHUkq9rGh3KS7HYlNY=, tarball: '@rollup/rollup-android-arm-eabi/download/@rollup/rollup-android-arm-eabi-4.12.0.tgz'}
+    resolution: {integrity: sha1-OMOr0ZVaPCHUkq9rGh3KS7HYlNY=, tarball: http://registry.m.jd.com/@rollup/rollup-android-arm-eabi/download/@rollup/rollup-android-arm-eabi-4.12.0.tgz}
     cpu: [arm]
     os: [android]
     requiresBuild: true
@@ -394,7 +394,7 @@ packages:
     optional: true
 
   /@rollup/rollup-android-arm64@4.12.0:
-    resolution: {integrity: sha1-OCLpKfQVYnYJ5TsRzsmkvoBt4OI=, tarball: '@rollup/rollup-android-arm64/download/@rollup/rollup-android-arm64-4.12.0.tgz'}
+    resolution: {integrity: sha1-OCLpKfQVYnYJ5TsRzsmkvoBt4OI=, tarball: http://registry.m.jd.com/@rollup/rollup-android-arm64/download/@rollup/rollup-android-arm64-4.12.0.tgz}
     cpu: [arm64]
     os: [android]
     requiresBuild: true
@@ -402,7 +402,7 @@ packages:
     optional: true
 
   /@rollup/rollup-darwin-arm64@4.12.0:
-    resolution: {integrity: sha1-bAgt5x9IH1ffbPo3Aasqev3pb2k=, tarball: '@rollup/rollup-darwin-arm64/download/@rollup/rollup-darwin-arm64-4.12.0.tgz'}
+    resolution: {integrity: sha1-bAgt5x9IH1ffbPo3Aasqev3pb2k=, tarball: http://registry.m.jd.com/@rollup/rollup-darwin-arm64/download/@rollup/rollup-darwin-arm64-4.12.0.tgz}
     cpu: [arm64]
     os: [darwin]
     requiresBuild: true
@@ -410,7 +410,7 @@ packages:
     optional: true
 
   /@rollup/rollup-darwin-x64@4.12.0:
-    resolution: {integrity: sha1-w0yg0x88RqIsmvoOlEQD7qDtz9g=, tarball: '@rollup/rollup-darwin-x64/download/@rollup/rollup-darwin-x64-4.12.0.tgz'}
+    resolution: {integrity: sha1-w0yg0x88RqIsmvoOlEQD7qDtz9g=, tarball: http://registry.m.jd.com/@rollup/rollup-darwin-x64/download/@rollup/rollup-darwin-x64-4.12.0.tgz}
     cpu: [x64]
     os: [darwin]
     requiresBuild: true
@@ -418,7 +418,7 @@ packages:
     optional: true
 
   /@rollup/rollup-linux-arm-gnueabihf@4.12.0:
-    resolution: {integrity: sha1-SOiZweQ4YpwHKIm4JKmHh6fCNi0=, tarball: '@rollup/rollup-linux-arm-gnueabihf/download/@rollup/rollup-linux-arm-gnueabihf-4.12.0.tgz'}
+    resolution: {integrity: sha1-SOiZweQ4YpwHKIm4JKmHh6fCNi0=, tarball: http://registry.m.jd.com/@rollup/rollup-linux-arm-gnueabihf/download/@rollup/rollup-linux-arm-gnueabihf-4.12.0.tgz}
     cpu: [arm]
     os: [linux]
     requiresBuild: true
@@ -426,7 +426,7 @@ packages:
     optional: true
 
   /@rollup/rollup-linux-arm64-gnu@4.12.0:
-    resolution: {integrity: sha1-eIwmmKEZ3CKQYtQNpq2ooJCnOmg=, tarball: '@rollup/rollup-linux-arm64-gnu/download/@rollup/rollup-linux-arm64-gnu-4.12.0.tgz'}
+    resolution: {integrity: sha1-eIwmmKEZ3CKQYtQNpq2ooJCnOmg=, tarball: http://registry.m.jd.com/@rollup/rollup-linux-arm64-gnu/download/@rollup/rollup-linux-arm64-gnu-4.12.0.tgz}
     cpu: [arm64]
     os: [linux]
     libc: [glibc]
@@ -435,7 +435,7 @@ packages:
     optional: true
 
   /@rollup/rollup-linux-arm64-musl@4.12.0:
-    resolution: {integrity: sha1-OIKk46Vkr55VgEvutnB2hXsDWrc=, tarball: '@rollup/rollup-linux-arm64-musl/download/@rollup/rollup-linux-arm64-musl-4.12.0.tgz'}
+    resolution: {integrity: sha1-OIKk46Vkr55VgEvutnB2hXsDWrc=, tarball: http://registry.m.jd.com/@rollup/rollup-linux-arm64-musl/download/@rollup/rollup-linux-arm64-musl-4.12.0.tgz}
     cpu: [arm64]
     os: [linux]
     libc: [musl]
@@ -444,7 +444,7 @@ packages:
     optional: true
 
   /@rollup/rollup-linux-riscv64-gnu@4.12.0:
-    resolution: {integrity: sha1-DGrXkuEZXBK/rmNEJaPSqg/pOrc=, tarball: '@rollup/rollup-linux-riscv64-gnu/download/@rollup/rollup-linux-riscv64-gnu-4.12.0.tgz'}
+    resolution: {integrity: sha1-DGrXkuEZXBK/rmNEJaPSqg/pOrc=, tarball: http://registry.m.jd.com/@rollup/rollup-linux-riscv64-gnu/download/@rollup/rollup-linux-riscv64-gnu-4.12.0.tgz}
     cpu: [riscv64]
     os: [linux]
     libc: [glibc]
@@ -453,7 +453,7 @@ packages:
     optional: true
 
   /@rollup/rollup-linux-x64-gnu@4.12.0:
-    resolution: {integrity: sha1-nWJIXqDxjYZ0AztXqhT7dY9uxuM=, tarball: '@rollup/rollup-linux-x64-gnu/download/@rollup/rollup-linux-x64-gnu-4.12.0.tgz'}
+    resolution: {integrity: sha1-nWJIXqDxjYZ0AztXqhT7dY9uxuM=, tarball: http://registry.m.jd.com/@rollup/rollup-linux-x64-gnu/download/@rollup/rollup-linux-x64-gnu-4.12.0.tgz}
     cpu: [x64]
     os: [linux]
     libc: [glibc]
@@ -462,7 +462,7 @@ packages:
     optional: true
 
   /@rollup/rollup-linux-x64-musl@4.12.0:
-    resolution: {integrity: sha1-UOgWfiizPJd8H4E97ysgdNFDXgU=, tarball: '@rollup/rollup-linux-x64-musl/download/@rollup/rollup-linux-x64-musl-4.12.0.tgz'}
+    resolution: {integrity: sha1-UOgWfiizPJd8H4E97ysgdNFDXgU=, tarball: http://registry.m.jd.com/@rollup/rollup-linux-x64-musl/download/@rollup/rollup-linux-x64-musl-4.12.0.tgz}
     cpu: [x64]
     os: [linux]
     libc: [musl]
@@ -471,7 +471,7 @@ packages:
     optional: true
 
   /@rollup/rollup-win32-arm64-msvc@4.12.0:
-    resolution: {integrity: sha1-aNIzJyogBEKRJElBIaQsSuvcW44=, tarball: '@rollup/rollup-win32-arm64-msvc/download/@rollup/rollup-win32-arm64-msvc-4.12.0.tgz'}
+    resolution: {integrity: sha1-aNIzJyogBEKRJElBIaQsSuvcW44=, tarball: http://registry.m.jd.com/@rollup/rollup-win32-arm64-msvc/download/@rollup/rollup-win32-arm64-msvc-4.12.0.tgz}
     cpu: [arm64]
     os: [win32]
     requiresBuild: true
@@ -479,7 +479,7 @@ packages:
     optional: true
 
   /@rollup/rollup-win32-ia32-msvc@4.12.0:
-    resolution: {integrity: sha1-NmymIiHRaJ47VaA/SuEq6bpZXUA=, tarball: '@rollup/rollup-win32-ia32-msvc/download/@rollup/rollup-win32-ia32-msvc-4.12.0.tgz'}
+    resolution: {integrity: sha1-NmymIiHRaJ47VaA/SuEq6bpZXUA=, tarball: http://registry.m.jd.com/@rollup/rollup-win32-ia32-msvc/download/@rollup/rollup-win32-ia32-msvc-4.12.0.tgz}
     cpu: [ia32]
     os: [win32]
     requiresBuild: true
@@ -487,7 +487,7 @@ packages:
     optional: true
 
   /@rollup/rollup-win32-x64-msvc@4.12.0:
-    resolution: {integrity: sha1-n/357RM6dGT0rhh+ueEpRBP6sjU=, tarball: '@rollup/rollup-win32-x64-msvc/download/@rollup/rollup-win32-x64-msvc-4.12.0.tgz'}
+    resolution: {integrity: sha1-n/357RM6dGT0rhh+ueEpRBP6sjU=, tarball: http://registry.m.jd.com/@rollup/rollup-win32-x64-msvc/download/@rollup/rollup-win32-x64-msvc-4.12.0.tgz}
     cpu: [x64]
     os: [win32]
     requiresBuild: true
@@ -495,7 +495,7 @@ packages:
     optional: true
 
   /@sxzz/popperjs-es@2.11.7:
-    resolution: {integrity: sha1-p/aeNmXT2psRX55xZx2uG5fhNnE=, tarball: '@sxzz/popperjs-es/download/@sxzz/popperjs-es-2.11.7.tgz'}
+    resolution: {integrity: sha1-p/aeNmXT2psRX55xZx2uG5fhNnE=, tarball: http://registry.m.jd.com/@sxzz/popperjs-es/download/@sxzz/popperjs-es-2.11.7.tgz}
     dev: false
 
   /@types/estree@1.0.5:
@@ -664,7 +664,7 @@ packages:
     dev: false
 
   /ansi-regex@5.0.1:
-    resolution: {integrity: sha1-CCyyyJyf6GWaMRpTvWpNxTAdswQ=, tarball: ansi-regex/download/ansi-regex-5.0.1.tgz}
+    resolution: {integrity: sha1-CCyyyJyf6GWaMRpTvWpNxTAdswQ=, tarball: http://registry.m.jd.com/ansi-regex/download/ansi-regex-5.0.1.tgz}
     engines: {node: '>=8'}
     dev: true
 
@@ -674,7 +674,7 @@ packages:
     dev: true
 
   /ansi-styles@4.3.0:
-    resolution: {integrity: sha1-7dgDYornHATIWuegkG7a00tkiTc=, tarball: ansi-styles/download/ansi-styles-4.3.0.tgz}
+    resolution: {integrity: sha1-7dgDYornHATIWuegkG7a00tkiTc=, tarball: http://registry.m.jd.com/ansi-styles/download/ansi-styles-4.3.0.tgz}
     engines: {node: '>=8'}
     dependencies:
       color-convert: 2.0.1
@@ -735,14 +735,14 @@ packages:
     dev: true
 
   /color-convert@2.0.1:
-    resolution: {integrity: sha1-ctOmjVmMm9s68q0ehPIdiWq9TeM=, tarball: color-convert/download/color-convert-2.0.1.tgz}
+    resolution: {integrity: sha1-ctOmjVmMm9s68q0ehPIdiWq9TeM=, tarball: http://registry.m.jd.com/color-convert/download/color-convert-2.0.1.tgz}
     engines: {node: '>=7.0.0'}
     dependencies:
       color-name: 1.1.4
     dev: true
 
   /color-name@1.1.4:
-    resolution: {integrity: sha1-wqCah6y95pVD3m9j+jmVyCbFNqI=, tarball: color-name/download/color-name-1.1.4.tgz}
+    resolution: {integrity: sha1-wqCah6y95pVD3m9j+jmVyCbFNqI=, tarball: http://registry.m.jd.com/color-name/download/color-name-1.1.4.tgz}
     dev: true
 
   /computeds@0.0.1:
@@ -807,7 +807,7 @@ packages:
     dev: false
 
   /emoji-regex@8.0.0:
-    resolution: {integrity: sha1-6Bj9ac5cz8tARZT4QpY79TFkzDc=, tarball: emoji-regex/download/emoji-regex-8.0.0.tgz}
+    resolution: {integrity: sha1-6Bj9ac5cz8tARZT4QpY79TFkzDc=, tarball: http://registry.m.jd.com/emoji-regex/download/emoji-regex-8.0.0.tgz}
     dev: true
 
   /emoji-regex@9.2.2:
@@ -872,7 +872,7 @@ packages:
     dev: true
 
   /fsevents@2.3.3:
-    resolution: {integrity: sha1-ysZAd4XQNnWipeGlMFxpezR9kNY=, tarball: fsevents/download/fsevents-2.3.3.tgz}
+    resolution: {integrity: sha1-ysZAd4XQNnWipeGlMFxpezR9kNY=, tarball: http://registry.m.jd.com/fsevents/download/fsevents-2.3.3.tgz}
     engines: {node: ^8.16.0 || ^10.6.0 || >=11.0.0}
     os: [darwin]
     requiresBuild: true
@@ -925,7 +925,7 @@ packages:
     dev: true
 
   /is-fullwidth-code-point@3.0.0:
-    resolution: {integrity: sha1-8Rb4Bk/pCz94RKOJl8C3UFEmnx0=, tarball: is-fullwidth-code-point/download/is-fullwidth-code-point-3.0.0.tgz}
+    resolution: {integrity: sha1-8Rb4Bk/pCz94RKOJl8C3UFEmnx0=, tarball: http://registry.m.jd.com/is-fullwidth-code-point/download/is-fullwidth-code-point-3.0.0.tgz}
     engines: {node: '>=8'}
     dev: true
 
@@ -955,7 +955,7 @@ packages:
     dev: true
 
   /jose@5.2.2:
-    resolution: {integrity: sha1-uRFw6bptvmCbDAqGVo+aH75DNcA=, tarball: jose/download/jose-5.2.2.tgz}
+    resolution: {integrity: sha1-uRFw6bptvmCbDAqGVo+aH75DNcA=, tarball: http://registry.m.jd.com/jose/download/jose-5.2.2.tgz}
     dev: false
 
   /lodash-es@4.17.21:
@@ -1159,7 +1159,7 @@ packages:
     engines: {node: '>=0.10.0'}
 
   /string-width@4.2.3:
-    resolution: {integrity: sha1-JpxxF9J7Ba0uU2gwqOyJXvnG0BA=, tarball: string-width/download/string-width-4.2.3.tgz}
+    resolution: {integrity: sha1-JpxxF9J7Ba0uU2gwqOyJXvnG0BA=, tarball: http://registry.m.jd.com/string-width/download/string-width-4.2.3.tgz}
     engines: {node: '>=8'}
     dependencies:
       emoji-regex: 8.0.0
@@ -1177,7 +1177,7 @@ packages:
     dev: true
 
   /strip-ansi@6.0.1:
-    resolution: {integrity: sha1-nibGPTD1NEPpSJSVshBdN7Z6hdk=, tarball: strip-ansi/download/strip-ansi-6.0.1.tgz}
+    resolution: {integrity: sha1-nibGPTD1NEPpSJSVshBdN7Z6hdk=, tarball: http://registry.m.jd.com/strip-ansi/download/strip-ansi-6.0.1.tgz}
     engines: {node: '>=8'}
     dependencies:
       ansi-regex: 5.0.1
@@ -1324,7 +1324,7 @@ packages:
     dev: true
 
   /wrap-ansi@7.0.0:
-    resolution: {integrity: sha1-Z+FFz/UQpqaYS98RUpEdadLrnkM=, tarball: wrap-ansi/download/wrap-ansi-7.0.0.tgz}
+    resolution: {integrity: sha1-Z+FFz/UQpqaYS98RUpEdadLrnkM=, tarball: http://registry.m.jd.com/wrap-ansi/download/wrap-ansi-7.0.0.tgz}
     engines: {node: '>=10'}
     dependencies:
       ansi-styles: 4.3.0

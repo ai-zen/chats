@@ -272,71 +272,59 @@ export class Chat {
       }
 
       // 记录这一轮工具调用消息，用于检测是否正确完成了所有工具调用。
-      const callResults: ChatAL.Message[] = [];
+      const callTasks: {
+        function_call: ChatAL.FunctionCall;
+        result: ChatAL.Message;
+      }[] = [];
 
-      // 等消费完流式数据后，如果判断有并行工具调用，则进行之
+      // 等消费完流式数据后，如果判断有并行工具函数调用，则记之
       if (pendingMsg.tool_calls?.length) {
-        await Promise.all(
-          pendingMsg.tool_calls
-            ?.filter((x) => x.function)
-            ?.map(async (tool_call) => {
-              // 创建工具函数调用结果消息，立即回显到主消息列表
-              const resultMsg = this.push(Message.createToolMessage(tool_call));
-
-              // 记录这次调用，用于后续检测是否调用成功
-              callResults.push(resultMsg);
-
-              try {
-                // 获取工具函数调用结果
-                const result = await this.getFunctionCallResult(
-                  tool_call.function!
-                );
-
-                // 回显调用结果
-                resultMsg.content = result;
-                resultMsg.status = ChatAL.MessageStatus.Completed;
-              } catch (error: any) {
-                // 如果获取调用结果过程中发生了错误，则回显错误
-                resultMsg.content = error?.message;
-                resultMsg.status = ChatAL.MessageStatus.Error;
-              }
-            })
+        callTasks.push(
+          ...pendingMsg.tool_calls
+            .filter((x) => x.type == "function" && x.function)
+            .map((tool_call) => ({
+              function_call: tool_call.function!,
+              result: this.push(Message.Tool(tool_call)),
+            }))
         );
       }
 
-      // 等消息完流式数据后，如果判断有函数调用，则进行之
+      // 等消息完流式数据后，如果判断有函数调用，则记之
       if (pendingMsg.function_call) {
-        // 创建函数调用结果消息，立即回显到主消息列表
-        const resultMsg = this.push(
-          Message.createFunctionMessage(pendingMsg.function_call)
-        );
-
-        // 记录这次调用，用于后续检测是否调用成功
-        callResults.push(resultMsg);
-
-        try {
-          // 获取函数调用结果
-          const result = await this.getFunctionCallResult(
-            pendingMsg.function_call
-          );
-
-          // 回显调用结果
-          resultMsg.content = result;
-          resultMsg.status = ChatAL.MessageStatus.Completed;
-        } catch (error: any) {
-          // 如果获取调用结果过程中发生了错误，则回显错误
-          resultMsg.content = error?.message;
-          resultMsg.status = ChatAL.MessageStatus.Error;
-        }
+        callTasks.push({
+          function_call: pendingMsg.function_call,
+          result: this.push(Message.Function(pendingMsg.function_call)),
+        });
       }
 
-      // 如果这一轮至少有一次工具调用，且所有工具调用都成功了
+      // 并行执行所有函数调用
+      await Promise.all(
+        callTasks.map(async ({ function_call, result }) => {
+          try {
+            // 获取工具函数调用结果
+            const content = await this.getFunctionCallResult(function_call);
+            // 回显调用结果
+            result.content = content;
+            result.status = ChatAL.MessageStatus.Completed;
+          } catch (error: any) {
+            // 如果获取调用结果过程中发生了错误，则回显错误
+            result.content = error?.message;
+            result.status = ChatAL.MessageStatus.Error;
+          }
+        })
+      );
+
+      // 如果这一轮至少有一次工具调用，且所有工具调用都完成了
+      // 另外值得注意的是，可以通过将调用结果消息设为非 Completed 状态防止自动进行下一轮对话。
+      // 尤其是在需要长时间等待用户填写某些表单时，可以利用这一机制，等用户填写完毕后再手动修改结果消息状态并进行下一轮对话。
       if (
-        callResults.length &&
-        callResults.every((x) => x.status === ChatAL.MessageStatus.Completed)
+        callTasks.length &&
+        callTasks.every(
+          (x) => x.result.status === ChatAL.MessageStatus.Completed
+        )
       ) {
         // 创建助手消息加到消息列表用于接收响应结果
-        this.push(Message.createAssistantMessage());
+        this.push(Message.Assistant());
 
         // 进行下一轮对话
         await this.send();
@@ -406,16 +394,16 @@ export class Chat {
    */
   async sendUserMessage(question: string) {
     // 以问题为内容创建用户消息加到消息列表用于提问
-    this.push(Message.createUserMessage(question));
+    this.push(Message.User(question));
 
     // 创建助手消息加到消息列表用于接收响应结果
-    this.push(Message.createAssistantMessage());
+    this.push(Message.Assistant());
 
     // 如果查询到参考资料就插入到用户提的问题的前面
     const references = await this.queryKnowledgeBases(question);
     if (references) {
       this.context.messages.splice(this.context.messages.length - 2, 0, {
-        ...Message.createUserMessage(references),
+        ...Message.User(references),
         hidden: true,
       });
     }

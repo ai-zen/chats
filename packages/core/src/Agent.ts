@@ -38,7 +38,7 @@ export class Agent extends ChatContext implements ChatAL.Agent {
     );
 
     // 创建一个助手回复消息
-    const assistantMessage = Message.createAssistantMessage();
+    const assistantMessage = Message.Assistant();
     agentContext.messages.push(assistantMessage);
 
     // 如果查询到参考资料就插入到提问之前
@@ -46,7 +46,7 @@ export class Agent extends ChatContext implements ChatAL.Agent {
       userMessage?.content as string
     );
     if (references) {
-      const referencesMessage = Message.createUserMessage(references);
+      const referencesMessage = Message.User(references);
       referencesMessage.hidden = true;
       agentContext.messages.splice(
         agentContext.messages.length - 2,

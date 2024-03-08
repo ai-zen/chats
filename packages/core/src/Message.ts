@@ -30,7 +30,7 @@ export class Message implements ChatAL.Message {
   /**
    * 创建系统消息
    */
-  static createSystemMessage(content = ""): ChatAL.Message {
+  static System(content = ""): ChatAL.Message {
     return {
       role: ChatAL.Role.System,
       content,
@@ -41,7 +41,7 @@ export class Message implements ChatAL.Message {
   /**
    * 创建助手消息，默认为待定状态
    */
-  static createAssistantMessage(content = ""): ChatAL.Message {
+  static Assistant(content = ""): ChatAL.Message {
     return {
       role: ChatAL.Role.Assistant,
       content,
@@ -52,7 +52,7 @@ export class Message implements ChatAL.Message {
   /**
    * 创建用户消息
    */
-  static createUserMessage(content = ""): ChatAL.Message {
+  static User(content = ""): ChatAL.Message {
     return {
       role: ChatAL.Role.User,
       content,
@@ -63,10 +63,7 @@ export class Message implements ChatAL.Message {
   /**
    * 创建工具结果消息
    */
-  static createToolMessage(
-    tool_call: ChatAL.ToolCall,
-    result = ""
-  ): ChatAL.Message {
+  static Tool(tool_call: ChatAL.ToolCall, result = ""): ChatAL.Message {
     return {
       role: ChatAL.Role.Tool,
       tool_call_id: tool_call.id,
@@ -79,7 +76,7 @@ export class Message implements ChatAL.Message {
   /**
    * 创建函数结果消息
    */
-  static createFunctionMessage(
+  static Function(
     function_call: ChatAL.FunctionCall,
     result = ""
   ): ChatAL.Message {
