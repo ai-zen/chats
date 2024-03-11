@@ -82,17 +82,16 @@ export function useSession(options: {
     }
   }
 
-  async function removeSession(index: number) {
+  async function removeSession(sessionId: string) {
     try {
       sessionState.isSaving = true;
-      const oldSession = sessionState.list[index];
-      if (oldSession) {
-        sessionState.list.splice(index, 1);
-        if (oldSession.id == sessionState.current?.id) {
-          sessionState.current = sessionState.list[0] || null;
-        }
-        await api.deleteSession(oldSession.id);
+      const index = sessionState.list.findIndex((x) => x.id === sessionId);
+      if (index == -1) return;
+      sessionState.list.splice(index, 1);
+      if (sessionId == sessionState.current?.id) {
+        sessionState.current = sessionState.list[0] || null;
       }
+      await api.deleteSession(sessionId);
     } finally {
       sessionState.isSaving = false;
     }

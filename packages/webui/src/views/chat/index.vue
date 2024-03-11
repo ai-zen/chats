@@ -8,14 +8,14 @@
             class="scene"
             v-for="scene of sceneState.list"
             :key="scene.id"
-            @click="sceneState.current = scene"
+            @click="onSceneClick(scene)"
             :class="{
               'is-current': sceneState.current?.id == scene.id,
             }"
           >
             <EmojiInput disabled class="icon" v-model="scene.icon"></EmojiInput>
             <div class="title">{{ scene.title }}</div>
-            <div class="add" @click="addSession(createSession(scene))">
+            <div class="add" @click="addSessionByScene(scene)">
               <el-icon>
                 <Plus></Plus>
               </el-icon>
@@ -39,14 +39,14 @@
               class="session"
               v-for="(session, index) of sessionState.list"
               :key="session.id"
-              @click="sessionState.current = session"
+              @click="onSessionTabClick(session)"
               :class="{
                 'is-current': sessionState.current?.id == session.id,
               }"
             >
               <div class="icon">{{ session.icon }}</div>
               <div class="title">{{ session.title }}</div>
-              <el-icon class="remove" @click.stop="removeSession(index)">
+              <el-icon class="remove" @click.stop="removeSession(session.id)">
                 <CloseBold />
               </el-icon>
             </div>
@@ -323,6 +323,44 @@ async function onSendClick() {
 
 function onAbortClick() {
   chatRef.value?.abortLastSend();
+}
+
+/**
+ * 判断某个会话自从创建后是否还未经使用
+ */
+function isUnusedSession(session: ChatPL.SessionPO) {
+  return session.messages.length == getScene(session.scene_id)?.messages.length;
+}
+
+/**
+ * 响应点击场景列表项
+ */
+function onSceneClick(scene: ChatPL.ScenePO) {
+  sceneState.current = scene;
+  const lastSession = sessionState.list.at(-1);
+
+  // 如果存在最后一个会话且未使用则先删除
+  if (lastSession && isUnusedSession(lastSession)) {
+    removeSession(lastSession.id);
+  }
+
+  // 从场景添加一个新会话
+  addSessionByScene(scene);
+}
+
+/**
+ * 从场景添加一个新会话
+ */
+function addSessionByScene(scene: ChatPL.ScenePO) {
+  addSession(createSession(scene));
+}
+
+/**
+ * 切换当前会话
+ */
+function onSessionTabClick(session: ChatPL.SessionPO) {
+  sessionState.current = session;
+  sceneState.current = getScene(session.scene_id) ?? null;
 }
 
 const sessionSettingFormRef = ref<InstanceType<typeof ElForm> | null>(null);
