@@ -181,12 +181,12 @@
 import {
   Agent,
   Chat,
+  ChatCompletionModels,
   KnowledgeBase,
+  Models,
+  ModelsKeys,
   Scene,
   Tool,
-  Models,
-  ChatCompletionModels,
-  ModelsKeys,
 } from "@ai-zen/chats-core";
 import {
   CloseBold,
@@ -198,8 +198,8 @@ import {
   Setting,
   VideoPause,
 } from "@element-plus/icons-vue";
-import { ElForm, ElMessage } from "element-plus";
-import { computed, onMounted, reactive, ref, watch } from "vue";
+import { ElForm, ElMessage, ElScrollbar } from "element-plus";
+import { computed, nextTick, onMounted, reactive, ref, watch } from "vue";
 import { ChatMessage, EmojiInput } from "../../components";
 import {
   useAgent,
@@ -210,6 +210,8 @@ import {
   useTool,
 } from "../../composables";
 import { ChatPL } from "../../types/ChatPL";
+
+const scrollBarRef = ref<InstanceType<typeof ElScrollbar> | undefined>();
 
 const { endpointsModelKeyMap, initEndpointState, getEndpointsInstances } =
   useEndpoint();
@@ -277,6 +279,8 @@ function initChat() {
 
   const scene = formatScene(scenePO);
 
+  chatRef.value?.events.destroy();
+
   chatRef.value = new Chat({
     ...scene,
     model_key: sessionPO.model_key || scene.model_key,
@@ -284,6 +288,8 @@ function initChat() {
     messages: sessionPO.messages,
     endpoints: getEndpointsInstances(),
   });
+
+  chatRef.value?.events.on("chunk", onChunk);
 }
 
 watch(
@@ -323,6 +329,16 @@ async function onSendClick() {
 
 function onAbortClick() {
   chatRef.value?.abortLastSend();
+}
+
+/**
+ * 如果接收到消息前处于底部，则滚动到底部
+ */
+async function onChunk() {
+  const scrollBarEl = scrollBarRef.value?.wrapRef;
+  if (!scrollBarEl) return;
+  await nextTick();
+  scrollBarEl.scrollTo({ behavior: "smooth", top: scrollBarEl.scrollHeight });
 }
 
 /**
