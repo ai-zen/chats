@@ -148,7 +148,7 @@
           label="聊天模型"
           :rules="{
             validator(_rule, value, callback) {
-              if (!(endpointsModelKeyMap as any)[value as any]?.length) {
+              if (!(endpointsModelKeyMap as any)[value ?? (currentScene as any).model_key]?.length) {
                 callback(new Error('请选择可用的聊天模型'));
               } else {
                 callback();
