@@ -284,6 +284,7 @@ export class Chat extends ChatContext {
       let ctx = new FunctionCallContext({
         function_call: task.function!,
         chat_instance: this,
+        result_message: resultMsg,
       });
 
       try {
