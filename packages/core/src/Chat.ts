@@ -2,21 +2,24 @@ import { AsyncQueue } from "@ai-zen/async-queue";
 import EventBus from "@ai-zen/event-bus";
 import { ChatAL } from "./ChatAL.js";
 import { ChatContext } from "./ChatContext.js";
+import { PickRequired } from "./Common.js";
 import { Endpoint } from "./Endpoints/Endpoint.js";
-import { Message } from "./Message.js";
-import { ChatCompletionModel } from "./Models/ChatCompletionModel.js";
-import { EmbeddingModel } from "./Models/EmbeddingModel.js";
-import { ChatCompletionModels, EmbeddingModels } from "./Models/index.js";
 import {
   ExecutableFunctionDefine,
   FunctionCallContext,
 } from "./FunctionCallContext.js";
+import { Message } from "./Message.js";
+import { ChatCompletionModel } from "./Models/ChatCompletionModel.js";
+import { EmbeddingModel } from "./Models/EmbeddingModel.js";
+import { ChatCompletionModels, EmbeddingModels } from "./Models/index.js";
 
 export class Chat extends ChatContext {
   endpoints: Endpoint[];
   events = new EventBus();
 
-  constructor(options: ChatContext & { endpoints: Endpoint[] }) {
+  constructor(
+    options: PickRequired<ChatContext, "model_key"> & { endpoints: Endpoint[] }
+  ) {
     super(options);
     this.endpoints = options.endpoints;
   }
