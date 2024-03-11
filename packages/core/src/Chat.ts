@@ -253,6 +253,8 @@ export class Chat extends ChatContext {
         }
       }
     }
+
+    this.events.emit("parsed", receiver);
   }
 
   /**
