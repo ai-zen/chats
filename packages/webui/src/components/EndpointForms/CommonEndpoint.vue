@@ -17,7 +17,7 @@
 </template>
 
 <script setup lang="ts">
-import JsonEditor from "../../JsonEditor/index.vue";
+import JsonEditor from "../JsonEditor/index.vue";
 
 const props = defineProps({
   endpoint_config: {

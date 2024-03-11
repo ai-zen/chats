@@ -3,6 +3,7 @@
         "composables",
         "OPENAI",
         "Retriable",
-        "webui"
+        "webui",
+        "Zhipu"
     ]
 }

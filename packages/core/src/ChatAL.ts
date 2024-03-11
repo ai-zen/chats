@@ -32,6 +32,8 @@ export namespace ChatAL {
     Stop = "stop",
     Length = "length",
     ContentFilter = "content_filter",
+    FunctionCall = "function_call",
+    ToolCalls = "tool_calls",
   }
 
   export interface FunctionCall {
@@ -131,8 +133,14 @@ export namespace ChatAL {
   export interface Scene extends ChatContext {}
 
   export interface Endpoint {
-    model_key: ModelsKeys;
+    enabled_models_keys: ModelsKeys[];
     endpoint_config: any;
+  }
+
+  export interface RequestConfig {
+    url: string;
+    headers: Record<string, string>;
+    body: Record<string, any>;
   }
 
   export interface KnowledgeItem {

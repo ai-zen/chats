@@ -66,11 +66,9 @@
 
       <component
         v-if="
-          formState.form.model_key &&
-          formState.form.model_key in MODELS_FORMS_MAP &&
-          'MODEL_CONFIG_FORM' in MODELS_FORMS_MAP[formState.form.model_key]
+          formState.form.model_key && MODELS_FORMS_MAP[formState.form.model_key]
         "
-        :is="MODELS_FORMS_MAP[formState.form.model_key].MODEL_CONFIG_FORM"
+        :is="MODELS_FORMS_MAP[formState.form.model_key]"
         :model_config="formState.form.model_config"
         :model_key="formState.form.model_key"
       >

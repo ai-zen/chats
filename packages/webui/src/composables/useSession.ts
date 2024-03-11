@@ -68,7 +68,6 @@ export function useSession(options: {
       scene_id: clonedScene.id,
       messages: clonedScene.messages,
       newMessage: "",
-      endpoints_ids: {},
     };
   }
 

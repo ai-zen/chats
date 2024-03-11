@@ -140,10 +140,22 @@
       <el-form
         v-if="sessionState.current && currentScene"
         :model="sessionState.current"
-        ref="sessionFormRef"
+        ref="sessionSettingFormRef"
         label-position="top"
       >
-        <el-form-item prop="model_key" label="聊天模型">
+        <el-form-item
+          prop="model_key"
+          label="聊天模型"
+          :rules="{
+            validator(_rule, value, callback) {
+              if (!(endpointsModelKeyMap as any)[value as any]?.length) {
+                callback(new Error('请选择可用的聊天模型'));
+              } else {
+                callback();
+              }
+            },
+          }"
+        >
           <el-select
             v-model="sessionState.current.model_key"
             style="width: 100%"
@@ -160,36 +172,6 @@
             ></el-option>
           </el-select>
         </el-form-item>
-
-        <el-form-item
-          v-for="item of requiredEndpoints"
-          :key="item.model_key"
-          :prop="`endpoints_ids.${item.model_key}`"
-          :rules="{
-            validator(_rule, value, callback) {
-              if (isInvalidEndpoint(item.type, value)) {
-                callback(new Error('请选择一个有效服务端'));
-              } else {
-                callback();
-              }
-            },
-          }"
-          :label="`服务端 用于 ${item.useAs.join('、')}`"
-        >
-          <el-select
-            v-model="sessionState.current.endpoints_ids[item.model_key]"
-            :placeholder="`请选择模型服务端 (${Models[item.model_key]?.title})`"
-            clearable
-            style="width: 100%"
-          >
-            <el-option
-              v-for="endpoint of endpointsModelKeyMap[item.model_key]"
-              :key="endpoint.id"
-              :label="endpoint.title"
-              :value="endpoint.id"
-            ></el-option>
-          </el-select>
-        </el-form-item>
       </el-form>
     </el-dialog>
   </div>
@@ -199,14 +181,12 @@
 import {
   Agent,
   Chat,
-  ChatCompletionModels,
-  ChatContext,
-  Endpoint,
   KnowledgeBase,
-  Models,
-  ModelsKeys,
   Scene,
   Tool,
+  Models,
+  ChatCompletionModels,
+  ModelsKeys,
 } from "@ai-zen/chats-core";
 import {
   CloseBold,
@@ -225,21 +205,14 @@ import {
   useAgent,
   useEndpoint,
   useKnowledgeBase,
-  useRequiredEndpoints,
   useScene,
   useSession,
   useTool,
 } from "../../composables";
 import { ChatPL } from "../../types/ChatPL";
 
-const sessionFormRef = ref<InstanceType<typeof ElForm> | null>(null);
-
-const {
-  endpointsModelKeyMap,
-  isInvalidEndpoint,
-  initEndpointState,
-  getEndpoint,
-} = useEndpoint();
+const { endpointsModelKeyMap, initEndpointState, getEndpointsInstances } =
+  useEndpoint();
 
 const { sceneState, getScene, initSceneState } = useScene();
 
@@ -248,16 +221,6 @@ const { initKnowledgeBaseState, getKnowledgeBases } = useKnowledgeBase();
 const { initToolState, getTools } = useTool();
 
 const { initAgentState, getAgents } = useAgent();
-
-const { getRequiredEndpoints } = useRequiredEndpoints({
-  getAgents,
-  getKnowledgeBases,
-  getScene,
-});
-
-const requiredEndpoints = computed(() => {
-  return getRequiredEndpoints(sessionState.current);
-});
 
 const {
   sessionState,
@@ -269,21 +232,6 @@ const {
   getCurrentScene() {
     return sceneState.current ?? undefined;
   },
-});
-
-const endpoints = computed(() => {
-  if (!sessionState.current) return;
-  return Object.fromEntries(
-    Object.entries(sessionState.current.endpoints_ids)
-      .map(([model_key, endpoint_id]) => {
-        const endpointPO = getEndpoint(endpoint_id);
-        return [
-          model_key as ModelsKeys,
-          endpointPO ? new Endpoint(endpointPO) : undefined,
-        ];
-      })
-      .filter(([, endpoint_po]) => endpoint_po !== undefined)
-  ) as Record<ModelsKeys, Endpoint>;
 });
 
 function formatTool(toolPO: ChatPL.ToolPO): Tool {
@@ -321,8 +269,6 @@ function formatScene(scenePO: ChatPL.ScenePO) {
 const chatRef = ref<Chat>();
 
 function initChat() {
-  if (!endpoints.value) return;
-
   const sessionPO = sessionState.current;
   if (!sessionPO) return;
 
@@ -332,20 +278,17 @@ function initChat() {
   const scene = formatScene(scenePO);
 
   chatRef.value = new Chat({
-    context: new ChatContext({
-      ...scene,
-      model_key: sessionPO.model_key || scene.model_key,
-      model_config: sessionPO.model_config || scene.model_config,
-      messages: sessionPO.messages,
-    }),
-    endpoints: endpoints.value!,
+    ...scene,
+    model_key: sessionPO.model_key || scene.model_key,
+    model_config: sessionPO.model_config || scene.model_config,
+    messages: sessionPO.messages,
+    endpoints: getEndpointsInstances(),
   });
 }
 
 watch(
   [
     () => sessionState.current,
-    () => endpoints.value,
     () => sessionState.current?.model_key,
     () => sessionState.current?.model_config,
   ],
@@ -367,7 +310,7 @@ async function onSendClick() {
   }
 
   try {
-    await sessionFormRef.value?.validate();
+    await sessionSettingFormRef.value?.validate();
   } catch (error) {
     ElMessage.error("请选择一个有效的服务端");
     sessionSettingDialogState.visible = true;
@@ -381,6 +324,8 @@ async function onSendClick() {
 function onAbortClick() {
   chatRef.value?.abortLastSend();
 }
+
+const sessionSettingFormRef = ref<InstanceType<typeof ElForm> | null>(null);
 
 const sessionSettingDialogState = reactive({
   visible: true, // 提前渲染会话表单
@@ -428,6 +373,7 @@ onMounted(async () => {
 .scroll-x:deep() {
   width: 0;
   flex-grow: 1;
+
   .el-scrollbar__view {
     display: flex;
   }
@@ -554,6 +500,7 @@ onMounted(async () => {
       border-radius: 6px;
       font-size: 14px;
       transition: 0.3s;
+
       &:hover {
         background-color: var(--el-color-primary);
         color: var(--el-fill-color);
@@ -601,6 +548,7 @@ onMounted(async () => {
     &.is-current {
       border-top: 3px solid var(--el-color-primary);
       border-bottom-color: transparent;
+
       .title {
         font-weight: bold;
         background-color: unset;

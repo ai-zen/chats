@@ -2,30 +2,22 @@ import { AsyncQueue } from "@ai-zen/async-queue";
 import EventBus from "@ai-zen/event-bus";
 import { ChatAL } from "./ChatAL.js";
 import { ChatContext } from "./ChatContext.js";
-import { Endpoint } from "./Endpoint.js";
+import { Endpoint } from "./Endpoints/Endpoint.js";
 import { Message } from "./Message.js";
 import { ChatCompletionModel } from "./Models/ChatCompletionModel.js";
 import { EmbeddingModel } from "./Models/EmbeddingModel.js";
-import {
-  ChatCompletionModels,
-  EmbeddingModels,
-  ModelsKeys,
-} from "./Models/index.js";
+import { ChatCompletionModels, EmbeddingModels } from "./Models/index.js";
 import {
   ExecutableFunctionDefine,
   FunctionCallContext,
 } from "./FunctionCallContext.js";
 
-export class Chat {
-  context: ChatContext;
-  endpoints: Record<ModelsKeys, Endpoint>;
+export class Chat extends ChatContext {
+  endpoints: Endpoint[];
   events = new EventBus();
 
-  constructor(options: {
-    context: ChatContext;
-    endpoints: Record<ModelsKeys, Endpoint>;
-  }) {
-    this.context = options.context;
+  constructor(options: ChatContext & { endpoints: Endpoint[] }) {
+    super(options);
     this.endpoints = options.endpoints;
   }
 
@@ -36,61 +28,48 @@ export class Chat {
    * Send the conversation to the server.
    */
   async send() {
-    const modelKey = this.context.model_key;
+    const modelKey = this.model_key;
     if (!modelKey) throw new Error("Model key not found");
 
-    const endpoint = this.endpoints[modelKey];
-    if (!endpoint) throw new Error("Endpoint not found");
+    const endpoint = Endpoint.match(this.endpoints, modelKey);
+    if (!endpoint) throw new Error(`Endpoint not found of ${modelKey}`);
 
     const model = new ChatCompletionModels[modelKey]({
-      model_config: this.context.model_config,
-      endpoint_config: endpoint.endpoint_config,
+      model_config: this.model_config,
+      request_config: await endpoint.build(modelKey),
     }) as ChatCompletionModel;
     if (!model) throw new Error("Model not found");
 
-    const receiver = this.context.messages.at(-1) as Message;
+    const receiver = this.messages.at(-1) as Message;
     if (!receiver) throw new Error("No pending message found");
 
-    const dataQueue = new AsyncQueue<ChatAL.StreamResponseData>();
     const controller = new AbortController();
 
     this.lastController = controller;
     this.lastReceiver = receiver;
 
-    const history = this.getHistory();
-    const tools = this.getTools();
-
-    model
-      .createStream({
-        signal: controller.signal,
-        messages: history,
-        tools: tools,
-        onOpen: () => {
-          receiver.status = ChatAL.MessageStatus.Writing;
-          this.events.emit("open");
-        },
-        onData: (data) => {
-          dataQueue.push(data);
-          this.events.emit("data", data);
-        },
-        onDone: () => {
-          receiver.status = ChatAL.MessageStatus.Completed;
-          dataQueue.done();
-          this.events.emit("done");
-        },
-      })
-      .catch((error) => {
+    const stream = model.createStream({
+      signal: controller.signal,
+      messages: this.getHistory(),
+      tools: this.getTools(),
+      onOpen: () => {
+        receiver.status = ChatAL.MessageStatus.Writing;
+        this.events.emit("open");
+      },
+      onError: (error) => {
         receiver.status = ChatAL.MessageStatus.Error;
         receiver.content = error.message;
         this.events.emit("error", error);
-      })
-      .finally(() => {
-        dataQueue.done();
+      },
+      onFinally: () => {
         this.events.emit("finally");
-      });
+      },
+    });
 
     try {
-      await this.parseStreamData(receiver, dataQueue);
+      await this.parseStreamData(receiver, stream);
+
+      receiver.status = ChatAL.MessageStatus.Completed;
 
       if (await this.handelToolCall(receiver)) {
         this.push(Message.Assistant());
@@ -102,14 +81,14 @@ export class Chat {
       this.events.emit("error", error);
     }
 
-    return this.context.messages;
+    return this.messages;
   }
 
   /**
    * Get the available tool definitions.
    */
   getTools() {
-    return [...this.context.agents, ...this.context.tools].map((x) => ({
+    return [...this.agents, ...this.tools].map((x) => ({
       type: x.type,
       function: {
         name: x.function.name,
@@ -123,7 +102,7 @@ export class Chat {
    * Get the conversation history in a format suitable for the request.
    */
   getHistory() {
-    return this.context.messages
+    return this.messages
       .filter(
         (x) =>
           (x.status == undefined ||
@@ -145,22 +124,22 @@ export class Chat {
    */
   async parseStreamData(
     receiver: Message,
-    dataQueue: AsyncQueue<ChatAL.StreamResponseData>
+    stream: AsyncQueue<ChatAL.StreamResponseData>
   ) {
-    for await (const data of dataQueue) {
-      this.events.emit("queue:before", data);
+    for await (const chunk of stream) {
+      this.events.emit("chunk", chunk);
 
-      if (data?.error) {
-        throw new Error(data.error.message);
+      if (chunk?.error) {
+        throw new Error(chunk.error.message);
       }
 
-      if (data?.choices?.[0]) {
-        let finishReason = data.choices[0].finish_reason;
+      if (chunk?.choices?.[0]) {
+        let finishReason = chunk.choices[0].finish_reason;
         if (finishReason) {
           receiver.finish_reason = finishReason;
         }
 
-        let delta = data.choices[0].delta;
+        let delta = chunk.choices[0].delta;
 
         if (delta?.content) {
           if (delta.content instanceof Array) {
@@ -262,16 +241,14 @@ export class Chat {
           }
 
           if (delta.function_call.name) {
-            receiver.function_call.name = delta.function_call.name;
+            receiver.function_call!.name = delta.function_call.name;
           }
 
           if (delta.function_call.arguments) {
-            receiver.function_call.arguments += delta.function_call.arguments;
+            receiver.function_call!.arguments += delta.function_call.arguments;
           }
         }
       }
-
-      this.events.emit("queue:after", data);
     }
   }
 
@@ -298,8 +275,8 @@ export class Chat {
       );
 
       const executable: ExecutableFunctionDefine | undefined = [
-        ...this.context.agents,
-        ...this.context.tools,
+        ...this.agents,
+        ...this.tools,
       ].find(
         (x) => x.function.name == task.function!.name && x.type == "function"
       );
@@ -341,7 +318,7 @@ export class Chat {
    */
   get isHasPendingMessage() {
     return (
-      this.context.messages.some(
+      this.messages.some(
         (x) =>
           x.status === ChatAL.MessageStatus.Pending ||
           x.status == ChatAL.MessageStatus.Writing
@@ -368,7 +345,7 @@ export class Chat {
 
     const references = await this.queryKnowledge(question);
     if (references) {
-      this.context.messages.splice(this.context.messages.length - 2, 0, {
+      this.messages.splice(this.messages.length - 2, 0, {
         ...Message.User(references),
         hidden: true,
       });
@@ -381,8 +358,8 @@ export class Chat {
    * Add a message to the message list.
    */
   push(message: ChatAL.Message) {
-    this.context.messages.push(message);
-    return this.context.messages.at(-1)!;
+    this.messages.push(message);
+    return this.messages.at(-1)!;
   }
 
   /**
@@ -390,13 +367,14 @@ export class Chat {
    */
   async queryKnowledge(question: string) {
     const results = await Promise.all(
-      this.context.knowledge_bases.map(async (kb) => {
-        const endpoint = this.endpoints[kb.model_key];
-        const embeddingModel = new EmbeddingModels[kb.model_key]({
-          endpoint_config: endpoint?.endpoint_config,
-          model_config: kb.model_config,
-        }) as EmbeddingModel;
+      this.knowledge_bases.map(async (kb) => {
+        const endpoint = Endpoint.match(this.endpoints, kb.model_key);
+        if (!endpoint) return;
 
+        const embeddingModel = new EmbeddingModels[kb.model_key]({
+          model_config: kb.model_config,
+          request_config: await endpoint.build(kb.model_key),
+        }) as EmbeddingModel;
         if (!embeddingModel) return;
 
         const vector = await embeddingModel.createEmbedding(question as string);

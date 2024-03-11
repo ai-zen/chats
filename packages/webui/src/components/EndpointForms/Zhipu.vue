@@ -1,16 +1,15 @@
 <template>
-  <el-form-item
-    prop="endpoint_config.url"
-    label="url"
-    :rules="{ required: true, message: '请输入url' }"
-  >
-    <el-input v-model="props.endpoint_config.url" placeholder="请输入url" />
+  <el-form-item prop="endpoint_config.zhipu_endpoint" label="zhipu_endpoint">
+    <el-input
+      v-model="props.endpoint_config.zhipu_endpoint"
+      placeholder="请输入 zhipu_endpoint"
+    />
   </el-form-item>
 
   <el-form-item prop="endpoint_config.api_key" label="api_key">
     <el-input
       v-model="props.endpoint_config.api_key"
-      placeholder="请输入api_key"
+      placeholder="请输入 api_key"
     />
   </el-form-item>
 
@@ -24,7 +23,7 @@
 </template>
 
 <script setup lang="ts">
-import JsonEditor from "../../JsonEditor/index.vue";
+import JsonEditor from "../JsonEditor/index.vue";
 
 const props = defineProps({
   endpoint_config: {

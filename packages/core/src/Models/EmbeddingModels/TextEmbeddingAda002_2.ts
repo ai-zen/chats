@@ -19,17 +19,9 @@ export interface TextEmbeddingAda002_2_Response {
 
 export interface TextEmbeddingAda002_2_ModelConfig {}
 
-export interface TextEmbeddingAda002_2_EndpointConfig {
-  url: string;
-  headers: Record<string, string> | undefined;
-  body: Record<string, string> | undefined;
-}
-
-export class TextEmbeddingAda002_2 extends EmbeddingModel<
-  TextEmbeddingAda002_2_ModelConfig,
-  TextEmbeddingAda002_2_EndpointConfig
-> {
+export class TextEmbeddingAda002_2 extends EmbeddingModel<TextEmbeddingAda002_2_ModelConfig> {
   static title = "text-embedding-ada-002-2";
+  static code = "text-embedding-ada-002";
   static INPUT_MAX_TOKENS: 8191;
   static OUTPUT_DIMENSION: 1536;
 
@@ -37,15 +29,16 @@ export class TextEmbeddingAda002_2 extends EmbeddingModel<
     if (!this.model_config) {
       throw new Error("TextEmbeddingAda002_2 config not set");
     }
-    if (!this.endpoint_config) {
-      throw new Error("TextEmbeddingAda002_2 endpoint not set");
+    if (!this.request_config) {
+      throw new Error("TextEmbeddingAda002_2 request not set");
     }
 
-    const res = await fetch(this.endpoint_config.url, {
+    const res = await fetch(this.request_config.url, {
       method: "POST",
-      headers: this.endpoint_config.headers,
+      headers: this.request_config.headers,
       body: JSON.stringify({
-        ...this.endpoint_config.body,
+        ...this.request_config.body,
+        ...this.model_config,
         input,
       }),
     });

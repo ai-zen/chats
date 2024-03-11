@@ -5,7 +5,7 @@
         <el-input
           class="key"
           type="text"
-          v-model="item.key"
+          v-model.trim="item.key"
           placeholder="参数名称"
         />
 

@@ -1,53 +1,20 @@
 import { ModelsKeys } from "@ai-zen/chats-core";
 import { defineComponent } from "vue";
-import ChatGPT_EndpointConfigForm from "./ChatGPT/EndpointConfigForm.vue";
-import ChatGPT_ModelConfigForm from "./ChatGPT/ModelConfigForm.vue";
-import TextEmbeddingAda002_2_EndpointConfigForm from "./TextEmbeddingAda002_2/EndpointConfigForm.vue";
-import ChatGLM_EndpointConfigForm from "./ChatGLM/EndpointConfigForm.vue";
-import ChatGLM_ModelConfigForm from "./ChatGLM/ModelConfigForm.vue";
+import ChatGPT_ModelConfigForm from "./ChatGPT.vue";
+import ChatGLM_ModelConfigForm from "./ChatGLM.vue";
 
-type ModelsFormsMap = Record<
-  ModelsKeys,
-  {
-    MODEL_CONFIG_FORM?: ReturnType<typeof defineComponent>;
-    ENDPOINT_CONFIG_FORM?: ReturnType<typeof defineComponent>;
-  }
->;
+type ModelsFormsMap = Record<ModelsKeys, ReturnType<typeof defineComponent>>;
 
 export const MODELS_FORMS_MAP: ModelsFormsMap = {
-  GPT35Turbo16K_0631: {
-    MODEL_CONFIG_FORM: ChatGPT_ModelConfigForm,
-    ENDPOINT_CONFIG_FORM: ChatGPT_EndpointConfigForm,
-  },
-  GPT35Turbo_0631: {
-    MODEL_CONFIG_FORM: ChatGPT_ModelConfigForm,
-    ENDPOINT_CONFIG_FORM: ChatGPT_EndpointConfigForm,
-  },
-  GPT35Turbo_1106: {
-    MODEL_CONFIG_FORM: ChatGPT_ModelConfigForm,
-    ENDPOINT_CONFIG_FORM: ChatGPT_EndpointConfigForm,
-  },
-  GPT4_1106Preview: {
-    MODEL_CONFIG_FORM: ChatGPT_ModelConfigForm,
-    ENDPOINT_CONFIG_FORM: ChatGPT_EndpointConfigForm,
-  },
-  GPT4_VisionPreview: {
-    MODEL_CONFIG_FORM: ChatGPT_ModelConfigForm,
-    ENDPOINT_CONFIG_FORM: ChatGPT_EndpointConfigForm,
-  },
-  TextEmbeddingAda002_2: {
-    ENDPOINT_CONFIG_FORM: TextEmbeddingAda002_2_EndpointConfigForm,
-  },
-  GLM3Turbo: {
-    MODEL_CONFIG_FORM: ChatGLM_ModelConfigForm,
-    ENDPOINT_CONFIG_FORM: ChatGLM_EndpointConfigForm,
-  },
-  GLM4: {
-    MODEL_CONFIG_FORM: ChatGLM_ModelConfigForm,
-    ENDPOINT_CONFIG_FORM: ChatGLM_EndpointConfigForm,
-  },
-  GLM4V: {
-    MODEL_CONFIG_FORM: ChatGLM_ModelConfigForm,
-    ENDPOINT_CONFIG_FORM: ChatGLM_EndpointConfigForm,
-  },
+  GPT35Turbo16K_0631: ChatGPT_ModelConfigForm,
+  GPT35Turbo_0125: ChatGPT_ModelConfigForm,
+  GPT35Turbo_0631: ChatGPT_ModelConfigForm,
+  GPT35Turbo_1106: ChatGPT_ModelConfigForm,
+  GPT4_0125Preview: ChatGPT_ModelConfigForm,
+  GPT4_1106Preview: ChatGPT_ModelConfigForm,
+  GPT4_VisionPreview: ChatGPT_ModelConfigForm,
+  TextEmbeddingAda002_2: undefined,
+  GLM3Turbo: ChatGLM_ModelConfigForm,
+  GLM4: ChatGLM_ModelConfigForm,
+  GLM4V: ChatGLM_ModelConfigForm,
 };

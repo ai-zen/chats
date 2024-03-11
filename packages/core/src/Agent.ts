@@ -37,30 +37,28 @@ export class Agent
    * @returns {Promise<string>} The result of the function execution.
    */
   async exec(functionCallContext: FunctionCallContext): Promise<string> {
-    // Clone a new agent for execution
-    const clonedAgent = new Agent({ ...this });
-
-    // Inject the arguments into the cloned agent's message list
-    clonedAgent.messages = Agent.intoMessagesWithParsedArgs(
-      clonedAgent.messages,
-      functionCallContext.parsed_args
-    );
-
     // Create a chat for the agent
     const agentChat = new Chat({
-      context: clonedAgent,
+      // Clone a new agent for execution
+      ...new Agent({ ...this }),
       // Inherit the endpoints from the parent chat
       endpoints: functionCallContext.chat_instance.endpoints,
     });
 
+    // Inject the arguments into the cloned agent's message list
+    agentChat.messages = Agent.intoMessagesWithParsedArgs(
+      agentChat.messages,
+      functionCallContext.parsed_args
+    );
+
     // Find the user message from the pre-defined message list
-    const userMessage = agentChat.context.messages.findLast(
+    const userMessage = agentChat.messages.findLast(
       (x) => x.role == ChatAL.Role.User
     );
 
     // Create an assistant reply message
     const assistantMessage = Message.Assistant();
-    clonedAgent.messages.push(assistantMessage);
+    agentChat.messages.push(assistantMessage);
 
     // If references are found, insert them before the user question
     const references = await agentChat.queryKnowledge(
@@ -69,8 +67,8 @@ export class Agent
     if (references) {
       const referencesMessage = Message.User(references);
       referencesMessage.hidden = true;
-      clonedAgent.messages.splice(
-        clonedAgent.messages.length - 2,
+      agentChat.messages.splice(
+        agentChat.messages.length - 2,
         0,
         referencesMessage
       );
@@ -80,7 +78,7 @@ export class Agent
     await agentChat.send();
 
     // Return the last message content of the agent chat as the result
-    return clonedAgent.messages.at(-1)?.content as string;
+    return agentChat.messages.at(-1)?.content as string;
   }
 
   /**

@@ -36,14 +36,32 @@
           placeholder="请输入标题"
         ></el-input>
       </el-form-item>
+
       <el-form-item
-        prop="model_key"
-        label="模型"
+        prop="endpoint_key"
+        label="服务端类型"
+        :rules="{ required: true, message: '请选择服务端类型' }"
+      >
+        <el-select v-model="formState.form.endpoint_key">
+          <el-option
+            v-for="Endpoint of Endpoints"
+            :value="Endpoint.name"
+            :label="Endpoint.title"
+          ></el-option>
+          <!-- 如果要针对服务端标题做i18n可以拿key去做 -->
+          <!-- TODO: 切换的时候还需要给默认值 -->
+        </el-select>
+      </el-form-item>
+
+      <el-form-item
+        prop="enabled_models_keys"
+        label="启用的模型"
         :rules="{ required: true, message: '请选择模型' }"
       >
-        <el-select v-model="formState.form.model_key">
+        <el-select v-model="formState.form.enabled_models_keys" multiple>
           <el-option
             v-for="model of Models"
+            :key="model.name"
             :value="model.name"
             :label="model.title"
           ></el-option>
@@ -52,13 +70,12 @@
 
       <component
         v-if="
-          formState.form.model_key &&
-          formState.form.model_key in MODELS_FORMS_MAP &&
-          'ENDPOINT_CONFIG_FORM' in MODELS_FORMS_MAP[formState.form.model_key]
+          formState.form.endpoint_key &&
+          ENDPOINTS_FORMS_MAP[formState.form.endpoint_key]
         "
-        :is="MODELS_FORMS_MAP[formState.form.model_key].ENDPOINT_CONFIG_FORM"
+        :is="ENDPOINTS_FORMS_MAP[formState.form.endpoint_key]"
         :endpoint_config="formState.form.endpoint_config"
-        :model_key="formState.form.model_key"
+        :endpoint_key="formState.form.endpoint_key"
       >
       </component>
 
@@ -76,14 +93,14 @@
 </template>
 
 <script setup lang="ts">
-import { Models, ModelsKeys } from "@ai-zen/chats-core";
+import { Models, ModelsKeys, Endpoints } from "@ai-zen/chats-core";
 import { Check } from "@element-plus/icons-vue";
 import { ElForm, ElMessage } from "element-plus";
 import { computed, onMounted, reactive, ref } from "vue";
 import { useRoute } from "vue-router";
 import * as api from "../../../api";
 import EmojiInput from "../../../components/EmojiInput/index.vue";
-import { MODELS_FORMS_MAP } from "../../../components/ModelsForms";
+import { ENDPOINTS_FORMS_MAP } from "../../../components/EndpointForms";
 import router from "../../../router";
 import { ChatPL } from "../../../types/ChatPL";
 import { FormMode } from "../../../types/Common";
@@ -114,7 +131,7 @@ function createEndpoint() {
     endpoint_config: {
       url: "",
       headers: {
-        "Content-Type": "application/json",
+        // "Content-Type": "application/json",
         // Authorization: "",
         // "api-key": "",
       },
@@ -122,7 +139,7 @@ function createEndpoint() {
         // model: "",
       },
     },
-    model_key: "" as ModelsKeys,
+    enabled_models_keys: [] as ModelsKeys[],
   };
 }
 

@@ -3,6 +3,7 @@ import {
   EmbeddingModelsKeys,
   ModelsKeys,
   ChatAL,
+  EndpointKeys,
 } from "@ai-zen/chats-core";
 
 /**
@@ -46,7 +47,6 @@ export namespace ChatPL {
     title: string;
     icon: string;
     scene_id: string;
-    endpoints_ids: Record<string, string>;
     messages: ChatAL.Message[];
     newMessage: string;
     model_key?: ChatCompletionModelsKeys;
@@ -57,7 +57,8 @@ export namespace ChatPL {
     id: string;
     title: string;
     icon: string;
-    model_key: ModelsKeys;
+    endpoint_key: EndpointKeys;
+    enabled_models_keys: ModelsKeys[];
     endpoint_config: any;
   }
 

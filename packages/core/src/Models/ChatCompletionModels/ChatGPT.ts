@@ -9,6 +9,7 @@ import {
   ChatCompletionModelCreateOptions,
   ChatCompletionModelCreateStreamOptions,
 } from "../ChatCompletionModel.js";
+import { AsyncQueue } from "@ai-zen/async-queue";
 
 export namespace ChatGPTTypes {
   export enum Role {
@@ -24,6 +25,7 @@ export namespace ChatGPTTypes {
     Length = "length",
     ContentFilter = "content_filter",
     FunctionCall = "function_call",
+    ToolCalls = "tool_calls",
   }
 
   export interface ToolDefine {
@@ -155,39 +157,30 @@ export interface ChatGPT_ModelConfig {
   max_tokens?: number;
 }
 
-export interface ChatGPT_EndpointConfig {
-  url: string;
-  headers?: Record<string, string>;
-  body?: {};
-}
-
 class RetriableError extends Error {}
 class FatalError extends Error {}
 
 export abstract class ChatGPT<
-  C extends ChatGPT_ModelConfig = ChatGPT_ModelConfig,
-  E extends ChatGPT_EndpointConfig = ChatGPT_EndpointConfig
-> extends ChatCompletionModel<C, E> {
+  M extends ChatGPT_ModelConfig = ChatGPT_ModelConfig
+> extends ChatCompletionModel<M> {
   async createCompletion(options: ChatCompletionModelCreateOptions) {
     if (!this.model_config) {
       throw new Error("ChatGPT config not set");
     }
-    if (!this.endpoint_config) {
-      throw new Error("ChatGPT endpoint not set");
+    if (!this.request_config) {
+      throw new Error("ChatGPT request not set");
     }
 
-    const model_config = await this.formatModelConfig(this.model_config);
-    const endpoint_config = await this.formatEndpointConfig(
-      this.endpoint_config
-    );
+    const model_config = this.formatModelConfig(this.model_config);
+    const request_config = this.formatRequestConfig(this.request_config);
 
     try {
-      const res = await fetch(endpoint_config.url, {
+      const res = await fetch(request_config.url, {
         signal: options.signal,
         method: "POST",
-        headers: endpoint_config.headers,
+        headers: request_config.headers,
         body: JSON.stringify({
-          ...endpoint_config.body,
+          ...request_config.body,
           ...model_config,
           ...this.formatTools(options.tools),
           messages: options.messages,
@@ -202,25 +195,25 @@ export abstract class ChatGPT<
     }
   }
 
-  async createStream(options: ChatCompletionModelCreateStreamOptions) {
+  createStream(options: ChatCompletionModelCreateStreamOptions) {
     if (!this.model_config) {
       throw new Error("ChatGPT config not set");
     }
-    if (!this.endpoint_config) {
-      throw new Error("ChatGPT endpoint not set");
+    if (!this.request_config) {
+      throw new Error("ChatGPT request not set");
     }
 
-    const model_config = await this.formatModelConfig(this.model_config);
-    const endpoint_config = await this.formatEndpointConfig(
-      this.endpoint_config
-    );
+    const model_config = this.formatModelConfig(this.model_config);
+    const request_config = this.formatRequestConfig(this.request_config);
 
-    return fetchEventSource(endpoint_config.url, {
+    const stream = new AsyncQueue<ChatAL.StreamResponseData>();
+
+    fetchEventSource(request_config.url, {
       signal: options.signal,
       method: "POST",
-      headers: endpoint_config.headers,
+      headers: request_config.headers,
       body: JSON.stringify({
-        ...endpoint_config.body,
+        ...request_config.body,
         ...model_config,
         ...this.formatTools(options.tools),
         stream: true,
@@ -256,26 +249,37 @@ export abstract class ChatGPT<
         }
 
         if (msg.data === "[DONE]") {
-          options.onDone?.();
+          stream.done();
           return;
         }
 
         try {
           const data = JSON.parse(msg.data) as ChatGPTTypes.StreamResponseData;
-          options.onData?.(this.formatSteamData(data));
+          stream.push(this.formatSteamData(data));
         } catch (error: any) {
           throw new FatalError(error?.message);
         }
       },
-    });
+    })
+      .catch((error) => {
+        options.onError?.(error);
+      })
+      .finally(() => {
+        stream.done();
+        options.onFinally?.();
+      });
+
+    return stream;
   }
 
-  async formatModelConfig(model_config?: C): Promise<C> {
-    return { ...model_config } as C;
+  formatModelConfig(model_config?: M): M {
+    return { ...model_config } as M;
   }
 
-  async formatEndpointConfig(endpoint_config?: E): Promise<E> {
-    return { ...endpoint_config } as E;
+  formatRequestConfig(
+    request_config?: ChatAL.RequestConfig
+  ): ChatAL.RequestConfig {
+    return { ...request_config } as ChatAL.RequestConfig;
   }
 
   formatTools(tools: ChatAL.ToolDefine[] | undefined) {
@@ -367,6 +371,10 @@ export abstract class ChatGPT<
         return ChatAL.FinishReason.ContentFilter;
       case ChatGPTTypes.FinishReason.Length:
         return ChatAL.FinishReason.Length;
+      case ChatGPTTypes.FinishReason.FunctionCall:
+        return ChatAL.FinishReason.FunctionCall;
+      case ChatGPTTypes.FinishReason.ToolCalls:
+        return ChatAL.FinishReason.ToolCalls;
       default:
         return ChatAL.FinishReason.Unknown;
     }

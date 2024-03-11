@@ -1,6 +1,6 @@
+import { Endpoint, Endpoints, ModelsKeys } from "@ai-zen/chats-core";
 import { computed, reactive } from "vue";
 import * as api from "../api";
-import { Models, ModelsKeys, ModelType } from "@ai-zen/chats-core";
 import { ChatPL } from "../types/ChatPL";
 
 export function useEndpoint() {
@@ -29,54 +29,45 @@ export function useEndpoint() {
     const map = {} as Record<ModelsKeys, ChatPL.EndpointPO[]>;
 
     endpointState.list.forEach((endpoint) => {
-      map[endpoint.model_key] ??= [];
-      map[endpoint.model_key]?.push(endpoint);
+      endpoint.enabled_models_keys.forEach((modelKey) => {
+        map[modelKey] ??= [];
+        map[modelKey]?.push(endpoint);
+      });
     });
 
-    console.log('map', map)
+    console.log("map", map);
 
     return map;
   });
 
-  const endpointsModelTypeMap = computed(() => {
-    const map: Record<ModelType, ChatPL.EndpointPO[]> = {
-      [ModelType.Completion]: [],
-      [ModelType.ChatCompletion]: [],
-      [ModelType.Embedding]: [],
-    };
+  function getEndpointsInstances(): Endpoint[] {
+    return endpointState.list.map(
+      (x) =>
+        new Endpoints[x.endpoint_key]({
+          enabled_models_keys: x.enabled_models_keys,
+          ...x.endpoint_config,
+        })
+    );
+  }
 
-    endpointState.list.forEach((endpoint) => {
-      const type = Models[endpoint.model_key]?.type;
-      map[type]?.push(endpoint);
+  function matchEndpointInstance(model_key: ModelsKeys) {
+    const x = endpointState.list.find((x) =>
+      x.enabled_models_keys.includes(model_key)
+    );
+
+    if (!x) throw new Error(`Endpoint already exists for model ${model_key}`);
+
+    return new Endpoints[x.endpoint_key]({
+      enabled_models_keys: x.enabled_models_keys,
+      ...x.endpoint_config,
     });
-
-    return map;
-  });
-
-  function isInvalidEndpoint(modelType: ModelType, endpointId?: string) {
-    return (
-      !endpointId ||
-      !endpointsModelTypeMap.value?.[modelType].some((x) => x.id == endpointId)
-    );
-  }
-
-  function getEndpoint(id?: string) {
-    return endpointState.list.find((x) => x.id === id);
-  }
-
-  function getEndpoints(ids?: string[]): ChatPL.EndpointPO[] {
-    return (
-      (ids?.map(getEndpoint).filter((x) => x) as ChatPL.EndpointPO[]) ?? []
-    );
   }
 
   return {
     endpointState,
-    endpointsModelTypeMap,
     endpointsModelKeyMap,
-    isInvalidEndpoint,
     initEndpointState,
-    getEndpoint,
-    getEndpoints,
+    getEndpointsInstances,
+    matchEndpointInstance,
   };
 }

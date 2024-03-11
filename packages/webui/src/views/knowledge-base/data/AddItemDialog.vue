@@ -41,44 +41,6 @@
           type="textarea"
         ></el-input>
       </el-form-item>
-
-      <el-form-item
-        label="服务端"
-        prop="endpoint_id"
-        :rules="{
-          required: true,
-          validator(_rule, value, callback) {
-            if (isInvalidEndpoint(ModelType.Embedding, value)) {
-              callback(new Error('请选择一个有效服务端'));
-            } else {
-              callback();
-            }
-          },
-        }"
-      >
-        <el-tooltip
-          effect="light"
-          placement="top"
-          :content="`请选择服务端，要求兼容 (${
-            Models[dialogState.detail?.model_key!]?.title
-          }) 模型`"
-        >
-          <el-select
-            v-model="dialogState.form.endpoint_id"
-            :placeholder="`请选择模型服务端 (${
-              Models[dialogState.detail?.model_key!]?.title
-            })`"
-            clearable
-          >
-            <el-option
-              v-for="endpoint of endpointsModelTypeMap[ModelType.Embedding]"
-              :key="endpoint.id"
-              :label="endpoint.title"
-              :value="endpoint.id"
-            ></el-option>
-          </el-select>
-        </el-tooltip>
-      </el-form-item>
     </el-form>
 
     <template #footer>
@@ -94,12 +56,7 @@
 </template>
 
 <script setup lang="ts">
-import {
-  EmbeddingModel,
-  EmbeddingModels,
-  ModelType,
-  Models,
-} from "@ai-zen/chats-core";
+import { EmbeddingModel, EmbeddingModels } from "@ai-zen/chats-core";
 import { ElForm, ElMessage } from "element-plus";
 import { reactive, ref, toRaw } from "vue";
 import * as api from "../../../api";
@@ -112,12 +69,11 @@ const emit = defineEmits<{
   save: [mode: FormMode, data: ChatPL.KnowledgeItemPO];
 }>();
 
-function createForm(): ChatPL.KnowledgeItemPO & { endpoint_id: string } {
+function createForm(): ChatPL.KnowledgeItemPO {
   return {
     id: uuid(),
     title: "",
     text: "",
-    endpoint_id: "",
     vector: [],
   };
 }
@@ -137,12 +93,7 @@ async function onDialogCancel() {
   dialogState.isOpen = false;
 }
 
-const {
-  endpointsModelTypeMap,
-  getEndpoint,
-  isInvalidEndpoint,
-  initEndpointState,
-} = useEndpoint();
+const { initEndpointState, matchEndpointInstance } = useEndpoint();
 
 async function onDialogConfirm() {
   if (!dialogState.detail) return;
@@ -159,9 +110,11 @@ async function onDialogConfirm() {
   }
 
   try {
+    const request_config = await matchEndpointInstance(
+      dialogState.detail.model_key
+    ).build(dialogState.detail.model_key);
     const embeddingModel = new EmbeddingModels[dialogState.detail.model_key]({
-      endpoint_config: getEndpoint(dialogState.form.endpoint_id)
-        ?.endpoint_config,
+      request_config,
       model_config: dialogState.detail.model_config,
     }) as EmbeddingModel;
     dialogState.form.vector = await embeddingModel.createEmbedding(

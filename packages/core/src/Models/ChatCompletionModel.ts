@@ -1,3 +1,4 @@
+import { AsyncQueue } from "@ai-zen/async-queue";
 import { ChatAL } from "../ChatAL.js";
 import { Model, ModelType } from "./Model.js";
 
@@ -6,8 +7,8 @@ export interface ChatCompletionModelCreateStreamOptions {
   messages: ChatAL.Message[];
   tools: ChatAL.ToolDefine[];
   onOpen?(): void;
-  onDone?(): void;
-  onData?(data: ChatAL.StreamResponseData): void;
+  onError?(error: Error): void;
+  onFinally?(): void;
 }
 
 export interface ChatCompletionModelCreateOptions {
@@ -16,7 +17,7 @@ export interface ChatCompletionModelCreateOptions {
   tools: ChatAL.ToolDefine[];
 }
 
-export abstract class ChatCompletionModel<C = {}, E = {}> extends Model<C, E> {
+export abstract class ChatCompletionModel<C = {}> extends Model<C> {
   static type = ModelType.ChatCompletion;
   static INPUT_MAX_TOKENS: number;
   static OUTPUT_MAX_TOKENS_LOWER_LIMIT: number;
@@ -26,7 +27,7 @@ export abstract class ChatCompletionModel<C = {}, E = {}> extends Model<C, E> {
   static IS_SUPPORT_IMAGE_CONTENT?: boolean;
   abstract createStream(
     options: ChatCompletionModelCreateStreamOptions
-  ): Promise<void>;
+  ): AsyncQueue<ChatAL.StreamResponseData>;
   abstract createCompletion(
     options: ChatCompletionModelCreateOptions
   ): Promise<ChatAL.ResponseData>;

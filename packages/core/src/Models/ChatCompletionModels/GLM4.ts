@@ -1,7 +1,5 @@
 import { ChatGLM } from "./ChatGLM.js";
 
-// TODO: GLM 有个奇葩的 do_sample 参数，记得要适配
-
 export class GLM4 extends ChatGLM {
   static title = "glm-4";
   static code = "glm-4";

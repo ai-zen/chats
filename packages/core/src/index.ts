@@ -4,7 +4,7 @@ export * from "./Models/index.js";
 export * from "./Agent.js";
 export * from "./Chat.js";
 export * from "./ChatContext.js";
-export * from "./Endpoint.js";
+export * from "./Endpoints/index.js";
 export * from "./KnowledgeBase.js";
 export * from "./Message.js";
 export * from "./Scene.js";

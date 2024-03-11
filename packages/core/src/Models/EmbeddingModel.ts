@@ -1,6 +1,6 @@
 import { Model, ModelType } from "./Model.js";
 
-export abstract class EmbeddingModel<C = {}, E = {}> extends Model<C, E> {
+export abstract class EmbeddingModel<C = {}> extends Model<C> {
   static type = ModelType.Embedding;
   static INPUT_MAX_TOKENS: number;
   static OUTPUT_DIMENSION: number;

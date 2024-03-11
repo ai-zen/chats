@@ -9,7 +9,7 @@
         <el-input
           class="key"
           type="text"
-          v-model="entry[0]"
+          v-model.trim="entry[0]"
           placeholder="属性名称"
         />
         <el-select
