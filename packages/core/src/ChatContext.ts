@@ -1,18 +1,17 @@
-import { Agent } from "./Agent.js";
-import { ChatAL } from "./ChatAL.js";
 import { PickRequired } from "./Common.js";
-import { KnowledgeBase } from "./KnowledgeBase.js";
+import { Endpoint } from "./Endpoint.js";
 import { Message } from "./Message.js";
 import { ChatCompletionModelsKeys } from "./Models/index.js";
+import { Rag } from "./Rag.js";
 import { Tool } from "./Tool.js";
 
-export class ChatContext implements ChatAL.ChatContext {
+export class ChatContext {
   model_key: ChatCompletionModelsKeys;
   model_config: any;
   messages: Message[];
-  knowledge_bases: KnowledgeBase[];
   tools: Tool[];
-  agents: Agent[];
+  rag?: Rag;
+  endpoints: Endpoint[];
 
   constructor(options: PickRequired<ChatContext, "model_key">) {
     if (!options.model_key)
@@ -20,8 +19,16 @@ export class ChatContext implements ChatAL.ChatContext {
     this.model_key = options.model_key;
     this.model_config = options.model_config ?? {};
     this.messages = options.messages ?? [];
-    this.knowledge_bases = options.knowledge_bases ?? [];
     this.tools = options.tools ?? [];
-    this.agents = options.agents ?? [];
+    this.rag = options.rag;
+    this.endpoints = options.endpoints ?? [];
+  }
+
+  /**
+   * Add a message to the message list.
+   */
+  append(message: Message) {
+    this.messages.push(message);
+    return this.messages.at(-1)!;
   }
 }

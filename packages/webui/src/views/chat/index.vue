@@ -37,7 +37,7 @@
             <div class="session placeholder-session"></div>
             <div
               class="session"
-              v-for="(session, index) of sessionState.list"
+              v-for="session of sessionState.list"
               :key="session.id"
               @click="onSessionTabClick(session)"
               :class="{
@@ -59,11 +59,11 @@
         class="chat-content"
         v-loading="sceneState.isLoading || sessionState.isLoading"
       >
-        <template v-if="sessionState.current">
+        <template v-if="sessionState.current && chatRef">
           <el-scrollbar class="scroll-y">
             <div class="messages">
               <template
-                v-for="(message, _index) of sessionState.current?.messages"
+                v-for="(message, _index) of chatRef?.messages"
                 :key="_index"
               >
                 <ChatMessage v-if="!message.hidden" :message="message" />
@@ -166,7 +166,7 @@
           >
             <el-option
               v-for="Model of ChatCompletionModels"
-              :label="`${Model.title} (${endpointsModelKeyMap[Model.name as ModelsKeys]?.length || 0})` "
+              :label="`${Model.title} (${endpointsModelKeyMap[Model.name as ModelsKeys]?.length || 0})`"
               :value="Model.name"
               :disabled="!endpointsModelKeyMap[Model.name as ModelsKeys]?.length"
             ></el-option>
@@ -179,14 +179,11 @@
 
 <script setup lang="ts">
 import {
-  Agent,
   Chat,
   ChatCompletionModels,
-  KnowledgeBase,
+  Message,
   Models,
   ModelsKeys,
-  Scene,
-  Tool,
 } from "@ai-zen/chats-core";
 import {
   CloseBold,
@@ -209,11 +206,12 @@ import {
   useSession,
   useTool,
 } from "../../composables";
+import { useDeserialize } from "../../composables/useDeserialize";
 import { ChatPL } from "../../types/ChatPL";
 
 const scrollBarRef = ref<InstanceType<typeof ElScrollbar> | undefined>();
 
-const { endpointsModelKeyMap, initEndpointState, getEndpointsInstances } =
+const { endpointsModelKeyMap, endpointsInstances, initEndpointState } =
   useEndpoint();
 
 const { sceneState, getScene, initSceneState } = useScene();
@@ -223,6 +221,12 @@ const { initKnowledgeBaseState, getKnowledgeBases } = useKnowledgeBase();
 const { initToolState, getTools } = useTool();
 
 const { initAgentState, getAgents } = useAgent();
+
+const { formatScene } = useDeserialize({
+  getAgents,
+  getKnowledgeBases,
+  getTools,
+});
 
 const {
   sessionState,
@@ -236,44 +240,11 @@ const {
   },
 });
 
-function formatTool(toolPO: ChatPL.ToolPO): Tool {
-  return new Tool(toolPO);
-}
-
-function formatKnowledgeBase(
-  knowledgeBasePO: ChatPL.KnowledgeBasePO
-): KnowledgeBase {
-  return new KnowledgeBase(knowledgeBasePO);
-}
-
-function formatAgent(agentPO: ChatPL.AgentPO): Agent {
-  return new Agent({
-    ...agentPO,
-    agents: getAgents(agentPO.agents_ids).map(formatAgent),
-    tools: getTools(agentPO.tools_ids).map(formatTool),
-    knowledge_bases: getKnowledgeBases(agentPO.knowledge_bases_ids).map(
-      formatKnowledgeBase
-    ),
-  });
-}
-
-function formatScene(scenePO: ChatPL.ScenePO) {
-  return new Scene({
-    ...scenePO,
-    agents: getAgents(scenePO.agents_ids).map(formatAgent),
-    tools: getTools(scenePO.tools_ids).map(formatTool),
-    knowledge_bases: getKnowledgeBases(scenePO.knowledge_bases_ids).map(
-      formatKnowledgeBase
-    ),
-  });
-}
-
 const chatRef = ref<Chat>();
 
 function initChat() {
   const sessionPO = sessionState.current;
   if (!sessionPO) return;
-
   const scenePO = getScene(sessionPO.scene_id);
   if (!scenePO) return;
 
@@ -285,8 +256,8 @@ function initChat() {
     ...scene,
     model_key: sessionPO.model_key || scene.model_key,
     model_config: sessionPO.model_config || scene.model_config,
-    messages: sessionPO.messages,
-    endpoints: getEndpointsInstances(),
+    messages: sessionPO.messages.map((x) => new Message(x)) as Message[],
+    endpoints: endpointsInstances.value,
   });
 
   chatRef.value?.events.on("chunk", onChunk);
@@ -310,6 +281,11 @@ const isHasPendingMessage = computed(() => {
 });
 
 async function onSendClick() {
+  if (!chatRef.value) {
+    ElMessage.error("未初始化有效聊天");
+    return;
+  }
+
   if (!sessionState.current?.newMessage) {
     ElMessage.error("请输入内容");
     return;
@@ -323,12 +299,14 @@ async function onSendClick() {
     return;
   }
 
-  chatRef.value?.sendUserMessage(sessionState.current.newMessage);
+  // 发送，并将结果同步到会话，触发自动保存
+  const question = sessionState.current.newMessage;
   sessionState.current.newMessage = "";
+  sessionState.current.messages = await chatRef.value.send(question);
 }
 
 function onAbortClick() {
-  chatRef.value?.abortLastSend();
+  chatRef.value?.abort();
 }
 
 /**

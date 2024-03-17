@@ -3,34 +3,30 @@ import EventBus from "@ai-zen/event-bus";
 import { ChatAL } from "./ChatAL.js";
 import { ChatContext } from "./ChatContext.js";
 import { PickRequired } from "./Common.js";
-import { Endpoint } from "./Endpoints/Endpoint.js";
-import {
-  ExecutableFunctionDefine,
-  FunctionCallContext,
-} from "./FunctionCallContext.js";
+import { Endpoint } from "./Endpoint.js";
+import { FunctionCallContext } from "./FunctionCallContext.js";
 import { Message } from "./Message.js";
 import { ChatCompletionModel } from "./Models/ChatCompletionModel.js";
-import { EmbeddingModel } from "./Models/EmbeddingModel.js";
-import { ChatCompletionModels, EmbeddingModels } from "./Models/index.js";
+import { ChatCompletionModels } from "./Models/index.js";
+import { Tool } from "./Tool.js";
+import { AgentTool } from "./Tools/AgentTool.js";
+import { EmbeddingSearch } from "./Rags/EmbeddingSearch.js";
 
 export class Chat extends ChatContext {
-  endpoints: Endpoint[];
   events = new EventBus();
 
-  constructor(
-    options: PickRequired<ChatContext, "model_key"> & { endpoints: Endpoint[] }
-  ) {
+  constructor(options: PickRequired<ChatContext, "model_key" | "endpoints">) {
     super(options);
-    this.endpoints = options.endpoints;
+    this.inheritEndpoints();
   }
 
   private lastController: AbortController | undefined = undefined;
-  private lastReceiver: ChatAL.Message | undefined = undefined;
+  private lastReceiver: Message | undefined = undefined;
 
   /**
-   * Send the conversation to the server.
+   * Run the conversation to the server.
    */
-  async send() {
+  async run() {
     const modelKey = this.model_key;
     if (!modelKey) throw new Error("Model key not found");
 
@@ -53,8 +49,8 @@ export class Chat extends ChatContext {
 
     const stream = model.createStream({
       signal: controller.signal,
-      messages: this.getHistory(),
-      tools: this.getTools(),
+      messages: this.formatHistory(),
+      tools: this.formatTools(),
       onOpen: () => {
         receiver.status = ChatAL.MessageStatus.Writing;
         this.events.emit("open");
@@ -75,8 +71,8 @@ export class Chat extends ChatContext {
       receiver.status = ChatAL.MessageStatus.Completed;
 
       if (await this.handelToolCall(receiver)) {
-        this.push(Message.Assistant());
-        await this.send();
+        this.append(Message.Assistant());
+        await this.run();
       }
     } catch (error: any) {
       receiver.status = ChatAL.MessageStatus.Error;
@@ -90,8 +86,8 @@ export class Chat extends ChatContext {
   /**
    * Get the available tool definitions.
    */
-  getTools() {
-    return [...this.agents, ...this.tools].map((x) => ({
+  formatTools() {
+    return this.tools.map((x) => ({
       type: x.type,
       function: {
         name: x.function.name,
@@ -104,7 +100,7 @@ export class Chat extends ChatContext {
   /**
    * Get the conversation history in a format suitable for the request.
    */
-  getHistory() {
+  formatHistory() {
     return this.messages
       .filter(
         (x) =>
@@ -261,56 +257,53 @@ export class Chat extends ChatContext {
    * Handle the tool call.
    * @returns This function returns a result indicating whether a new round of chat is needed.
    */
-  async handelToolCall(receiver: ChatAL.Message): Promise<boolean> {
-    const callTasks: ChatAL.ToolCall[] = [];
+  async handelToolCall(receiver: Message): Promise<boolean> {
+    const tasks: ChatAL.ToolCall[] = [];
 
     if (receiver.tool_calls?.length) {
-      callTasks.push(
+      tasks.push(
         ...receiver.tool_calls.filter((x) => x.type == "function" && x.function)
       );
     }
 
     if (receiver.function_call) {
-      callTasks.push({ function: receiver.function_call });
+      tasks.push({ function: receiver.function_call });
     }
 
-    const callPromises = callTasks.map(async (task) => {
-      const resultMsg = this.push(
+    const promises = tasks.map(async (task) => {
+      const resultReceiver = this.append(
         task.id ? Message.Tool(task) : Message.Function(task.function!)
       );
 
-      const executable: ExecutableFunctionDefine | undefined = [
-        ...this.agents,
-        ...this.tools,
-      ].find(
+      const matchTools: Tool | undefined = this.tools.find(
         (x) => x.function.name == task.function!.name && x.type == "function"
       );
 
       let ctx = new FunctionCallContext({
         function_call: task.function!,
         chat_instance: this,
-        result_message: resultMsg,
+        result_message: resultReceiver,
       });
 
       try {
-        resultMsg.content = await executable?.exec(ctx);
-        resultMsg.status = ChatAL.MessageStatus.Completed;
+        resultReceiver.content = await matchTools?.exec(ctx);
+        resultReceiver.status = ChatAL.MessageStatus.Completed;
       } catch (error: any) {
-        resultMsg.content = error?.message;
-        resultMsg.status = ChatAL.MessageStatus.Error;
+        resultReceiver.content = error?.message;
+        resultReceiver.status = ChatAL.MessageStatus.Error;
       }
 
       return {
         is_prevent_default: ctx.is_prevent_default,
-        status: resultMsg.status,
+        status: resultReceiver.status,
       };
     });
 
-    const callResults = await Promise.all(callPromises);
+    const results = await Promise.all(promises);
 
     const isNeedNext = Boolean(
-      callResults.length &&
-        callResults.every(
+      results.length &&
+        results.every(
           (x) =>
             !x.is_prevent_default && x.status === ChatAL.MessageStatus.Completed
         )
@@ -335,7 +328,7 @@ export class Chat extends ChatContext {
   /**
    * Abort the last send request.
    */
-  abortLastSend() {
+  abort() {
     this.lastController?.abort();
     if (this.lastReceiver) {
       this.lastReceiver.status = ChatAL.MessageStatus.Aborted;
@@ -343,58 +336,34 @@ export class Chat extends ChatContext {
   }
 
   /**
-   * Send a user message.
+   * Send a user question.
    */
-  async sendUserMessage(question: string) {
-    this.push(Message.User(question));
-    this.push(Message.Assistant());
+  async send(question: string) {
+    // Create an question message.
+    const questionMessage = this.append(Message.User(question));
 
-    const references = await this.queryKnowledge(question);
-    if (references) {
-      this.messages.splice(this.messages.length - 2, 0, {
-        ...Message.User(references),
-        hidden: true,
-      });
+    // Create an assistant reply message.
+    this.append(Message.Assistant());
+
+    // Rewrite the user question.
+    await this.rag?.rewrite(questionMessage, this.messages);
+
+    // Run the chat.
+    return this.run();
+  }
+
+  /**
+   * Inherit endpoints of AgentTool, EmbeddingSearch.
+   */
+  inheritEndpoints() {
+    this.tools?.forEach((x) => {
+      if (x instanceof AgentTool && !x.endpoints?.length) {
+        x.endpoints = this.endpoints;
+      }
+    });
+
+    if (this.rag instanceof EmbeddingSearch && !this.rag.endpoints?.length) {
+      this.rag.endpoints = this.endpoints;
     }
-
-    return this.send();
-  }
-
-  /**
-   * Add a message to the message list.
-   */
-  push(message: ChatAL.Message) {
-    this.messages.push(message);
-    return this.messages.at(-1)!;
-  }
-
-  /**
-   * Query the knowledge base for related information.
-   */
-  async queryKnowledge(question: string) {
-    const results = await Promise.all(
-      this.knowledge_bases.map(async (kb) => {
-        const endpoint = Endpoint.match(this.endpoints, kb.model_key);
-        if (!endpoint) return;
-
-        const embeddingModel = new EmbeddingModels[kb.model_key]({
-          model_config: kb.model_config,
-          request_config: await endpoint.build(kb.model_key),
-        }) as EmbeddingModel;
-        if (!embeddingModel) return;
-
-        const vector = await embeddingModel.createEmbedding(question as string);
-        const records = kb.search(vector, 5, 0.8);
-        const texts = records.map((x) => x.text);
-
-        return texts;
-      })
-    );
-
-    const texts = results.flat().filter((x) => x) as string[];
-    if (!texts.length) return;
-    return `References: \n\n${texts
-      .map((x, i) => `${i + 1}. ${x}`)
-      .join("\n")}`;
   }
 }

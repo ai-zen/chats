@@ -1,6 +1,6 @@
 import { AsyncQueue } from "@ai-zen/async-queue";
 import { ChatAL } from "../ChatAL.js";
-import { Model, ModelType } from "./Model.js";
+import { Model, ModelType } from "../Model.js";
 
 export interface ChatCompletionModelCreateStreamOptions {
   signal?: AbortSignal;

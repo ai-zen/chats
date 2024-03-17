@@ -16,4 +16,3 @@ export * from "./AzureOpenAI.js";
 export * from "./CommonEndpoint.js";
 export * from "./OpenAI.js";
 export * from "./Zhipu.js";
-export * from "./Endpoint.js";

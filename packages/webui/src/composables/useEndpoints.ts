@@ -1,4 +1,4 @@
-import { Endpoint, Endpoints, ModelsKeys } from "@ai-zen/chats-core";
+import { Endpoints, ModelsKeys } from "@ai-zen/chats-core";
 import { computed, reactive } from "vue";
 import * as api from "../api";
 import { ChatPL } from "../types/ChatPL";
@@ -40,7 +40,7 @@ export function useEndpoint() {
     return map;
   });
 
-  function getEndpointsInstances(): Endpoint[] {
+  const endpointsInstances = computed(() => {
     return endpointState.list.map(
       (x) =>
         new Endpoints[x.endpoint_key]({
@@ -48,7 +48,7 @@ export function useEndpoint() {
           ...x.endpoint_config,
         })
     );
-  }
+  });
 
   function matchEndpointInstance(model_key: ModelsKeys) {
     const x = endpointState.list.find((x) =>
@@ -67,7 +67,7 @@ export function useEndpoint() {
     endpointState,
     endpointsModelKeyMap,
     initEndpointState,
-    getEndpointsInstances,
+    endpointsInstances,
     matchEndpointInstance,
   };
 }

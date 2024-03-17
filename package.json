@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "build-core": "pnpm --filter @ai-zen/chats-code build",
+    "build-core": "pnpm --filter @ai-zen/chats-core build",
     "dev": "pnpm build-core && pnpm --filter @ai-zen/chats-webui dev"
   },
   "keywords": [],

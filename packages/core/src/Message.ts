@@ -6,6 +6,7 @@ import { PickRequired } from "./Common.js";
  */
 export class Message implements ChatAL.Message {
   name?: string | undefined;
+  raw_content?: string | ChatAL.MessageContentSection[];
   content?: string | ChatAL.MessageContentSection[];
   function_call?: ChatAL.FunctionCall | undefined;
   tool_call_id?: number | undefined;
@@ -22,6 +23,7 @@ export class Message implements ChatAL.Message {
   constructor(options: PickRequired<Message | "role">) {
     if (!options.role) throw new Error("Message must have a role");
     this.name = options.name;
+    this.raw_content = options.raw_content;
     this.content = options.content;
     this.function_call = options.function_call;
     this.tool_call_id = options.tool_call_id;
@@ -31,6 +33,23 @@ export class Message implements ChatAL.Message {
     this.finish_reason = options.finish_reason;
     this.hidden = options.hidden;
     this.omit = options.omit;
+  }
+
+  /**
+   * Returns string or JSON string for the content.
+   */
+  toString() {
+    return typeof this.content === "string"
+      ? this.content
+      : JSON.stringify(this.content);
+  }
+
+  /**
+   * Rewrite the message. The original content will be stored in `raw_content`.
+   */
+  rewrite(newContent: string | ChatAL.MessageContentSection[]) {
+    this.raw_content = this.raw_content || this.content;
+    this.content = newContent;
   }
 
   /**

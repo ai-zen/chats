@@ -12,6 +12,5 @@ export type ChatCompletionModelsKeys = keyof typeof ChatCompletionModels;
 export type EmbeddingModelsKeys = keyof typeof EmbeddingModels;
 export type ModelsKeys = keyof typeof Models;
 
-export * from "./Model.js";
 export * from "./EmbeddingModel.js";
 export * from "./ChatCompletionModel.js";

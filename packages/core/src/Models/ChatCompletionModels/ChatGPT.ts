@@ -10,6 +10,7 @@ import {
   ChatCompletionModelCreateStreamOptions,
 } from "../ChatCompletionModel.js";
 import { AsyncQueue } from "@ai-zen/async-queue";
+import { RequestConfig } from "../../Model.js";
 
 export namespace ChatGPTTypes {
   export enum Role {
@@ -276,10 +277,8 @@ export abstract class ChatGPT<
     return { ...model_config } as M;
   }
 
-  formatRequestConfig(
-    request_config?: ChatAL.RequestConfig
-  ): ChatAL.RequestConfig {
-    return { ...request_config } as ChatAL.RequestConfig;
+  formatRequestConfig(request_config?: RequestConfig): RequestConfig {
+    return { ...request_config } as RequestConfig;
   }
 
   formatTools(tools: ChatAL.ToolDefine[] | undefined) {

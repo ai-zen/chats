@@ -1,5 +1,5 @@
 import { ModelsKeys } from "../Models/index.js";
-import { Endpoint } from "./Endpoint.js";
+import { Endpoint } from "../Endpoint.js";
 
 export interface CommonEndpointConfig {
   url: string;

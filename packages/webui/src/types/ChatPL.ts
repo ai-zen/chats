@@ -18,11 +18,17 @@ export namespace ChatPL {
     callback?: (...args: any[]) => any;
   }
 
-  export interface AgentPO extends ChatAL.ToolDefine {
+  export enum RetrievalType {
+    RAG_EMBEDDING_SEARCH = "embedding_search",
+    TOOL_INDEXED_SEARCH = "tool_indexed_search",
+  }
+
+  export interface ChatContextPO {
     model_key: ChatCompletionModelsKeys;
     model_config: any;
     messages: ChatAL.Message[];
     knowledge_bases_ids: string[];
+    retrieval_type?: RetrievalType;
     tools_ids: string[];
     agents_ids: string[];
     id: string;
@@ -30,17 +36,9 @@ export namespace ChatPL {
     icon: string;
   }
 
-  export interface ScenePO {
-    model_key: ChatCompletionModelsKeys;
-    model_config: any;
-    messages: ChatAL.Message[];
-    knowledge_bases_ids: string[];
-    tools_ids: string[];
-    agents_ids: string[];
-    id: string;
-    title: string;
-    icon: string;
-  }
+  export interface AgentPO extends ChatContextPO, ChatAL.ToolDefine {}
+
+  export interface ScenePO extends ChatContextPO {}
 
   export interface SessionPO {
     id: string;

@@ -1,8 +1,7 @@
-import { ChatAL } from "../ChatAL.js";
-import { PickRequired } from "../Common.js";
-import { ModelsKeys } from "../Models/index.js";
+import { ModelsKeys } from "./Models/index.js";
+import { RequestConfig } from "./Model.js";
 
-export abstract class Endpoint<C extends {} = any> implements ChatAL.Endpoint {
+export abstract class Endpoint<C extends {} = any> {
   static title: string;
 
   get title() {
@@ -38,7 +37,7 @@ export abstract class Endpoint<C extends {} = any> implements ChatAL.Endpoint {
     this.endpoint_config = (endpoint_config as any) ?? {};
   }
 
-  abstract build(model_key: string): Promise<ChatAL.RequestConfig>;
+  abstract build(model_key: string): Promise<RequestConfig>;
 
   isMatch(model_key: ModelsKeys) {
     return this.enabled_models_keys.includes(model_key);

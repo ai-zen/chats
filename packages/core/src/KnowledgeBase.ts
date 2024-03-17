@@ -1,14 +1,18 @@
-import { ChatAL } from "./ChatAL.js";
 import { PickRequired } from "./Common.js";
 import { EmbeddingModelsKeys } from "./Models/index.js";
-import { Vector, VectorDatabase } from "./VectorDatabase.js";
+import { DatabaseRecord, Vector, VectorDatabase } from "./VectorDatabase.js";
 
-export class KnowledgeBase implements ChatAL.KnowledgeBase {
+export interface KnowledgeItem extends DatabaseRecord {
+  title: string;
+  text: string;
+}
+
+export class KnowledgeBase {
   model_key: EmbeddingModelsKeys;
   model_config: {};
-  data: ChatAL.KnowledgeItem[];
+  data: KnowledgeItem[];
 
-  private db: VectorDatabase<ChatAL.KnowledgeItem>;
+  private db: VectorDatabase<KnowledgeItem>;
 
   constructor(options: PickRequired<KnowledgeBase, "model_key">) {
     if (!options.model_key)

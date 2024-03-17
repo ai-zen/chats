@@ -1,31 +1,30 @@
 import {
+  AgentTool,
+  AzureOpenAI,
   Chat,
   ChatAL,
-  ChatContext,
-  Endpoint,
-  Tool,
-  Agent,
-  OpenAI,
-  AzureOpenAI,
+  Tool as CallbackTool,
 } from "./dist/index.js";
 
 async function main() {
+  const endpoints = [
+    // new OpenAI({
+    //   enabled_models_keys: ["GPT35Turbo_1106"],
+    //   api_key: "YOUR_OPENAI_KEY",
+    // }),
+    new AzureOpenAI({
+      enabled_models_keys: ["GPT35Turbo_1106"],
+      azure_endpoint: "https://YOUR_AZURE_RESOURCES.openai.azure.com/",
+      api_key: "YOUR_AZURE_OPENAI_KEY",
+      api_version: "2024-02-15-preview",
+      deployments: {
+        GPT35Turbo_1106: "YOUR_MODEL_DEPLOYMENT_NAME",
+      },
+    }),
+  ];
+
   const chat = new Chat({
-    endpoints: [
-      // new OpenAI({
-      //   enabled_models_keys: ["GPT35Turbo_1106"],
-      //   api_key: "YOUR_OPENAI_KEY",
-      // }),
-      new AzureOpenAI({
-        enabled_models_keys: ["GPT35Turbo_1106"],
-        azure_endpoint: "https://YOUR_AZURE_RESOURCES.openai.azure.com/",
-        api_key: "YOUR_AZURE_OPENAI_KEY",
-        api_version: "2024-02-15-preview",
-        deployments: {
-          GPT35Turbo_1106: "YOUR_MODEL_DEPLOYMENT_NAME",
-        },
-      }),
-    ],
+    endpoints,
     model_key: "GPT35Turbo_1106",
     messages: [
       {
@@ -34,7 +33,7 @@ async function main() {
       },
     ],
     tools: [
-      new Tool({
+      new CallbackTool({
         function: {
           name: "getNowTime",
           description: "获取指定时区当前时间",
@@ -61,10 +60,7 @@ async function main() {
           };
         },
       }),
-    ],
-    agents: [
-      new Agent({
-        model_key: "GPT35Turbo_1106",
+      new AgentTool({
         function: {
           name: "getWeather",
           description: "当你需要获取某个城市某天的天气时可以调用此函数",
@@ -83,6 +79,7 @@ async function main() {
             required: ["city", "date"],
           },
         },
+        model_key: "GPT35Turbo_1106",
         messages: [
           {
             role: ChatAL.Role.System,
@@ -99,7 +96,7 @@ async function main() {
   });
 
   console.log("send...");
-  const messages = await chat.sendUserMessage("当前时间纽约天气如何？");
+  const messages = await chat.send("当前时间纽约天气如何？");
   console.log("messages", JSON.stringify(messages, null, 4));
 }
 

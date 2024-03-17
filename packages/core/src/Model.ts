@@ -1,4 +1,8 @@
-import { ChatAL } from "../ChatAL";
+export interface RequestConfig {
+  url: string;
+  headers: Record<string, string>;
+  body: Record<string, any>;
+}
 
 export enum ModelType {
   Completion = "completion",
@@ -23,10 +27,10 @@ export abstract class Model<ModelConfig = {}> {
     return this.constructor.name;
   }
   model_config?: ModelConfig;
-  request_config?: ChatAL.RequestConfig;
+  request_config?: RequestConfig;
   constructor(options: {
     model_config?: ModelConfig;
-    request_config?: ChatAL.RequestConfig;
+    request_config?: RequestConfig;
   }) {
     this.model_config = options.model_config;
     this.request_config = options.request_config;

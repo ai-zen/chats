@@ -2,13 +2,6 @@ import { Chat } from "./Chat";
 import { ChatAL } from "./ChatAL";
 
 /**
- * Executable function define
- */
-export interface ExecutableFunctionDefine {
-  exec(ctx: FunctionCallContext): Promise<string>;
-}
-
-/**
  * Function calling context
  */
 export class FunctionCallContext {

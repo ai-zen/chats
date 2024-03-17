@@ -1,5 +1,6 @@
-import { ModelType, Models, ModelsKeys } from "../Models/index.js";
-import { Endpoint } from "./Endpoint.js";
+import { Endpoint } from "../Endpoint";
+import { ModelType } from "../Model";
+import { ModelsKeys, Models } from "../Models";
 
 export interface OpenAIConfig {
   openai_endpoint?: string;

@@ -129,6 +129,26 @@
       </el-form-item>
 
       <el-form-item
+        prop="retrieval_type"
+        label="知识召回方式"
+        :rules="{
+          required: Boolean(formState.form.knowledge_bases_ids.length),
+          message: '请选择知识库召回方式',
+        }"
+      >
+        <el-select v-model="formState.form.retrieval_type" clearable>
+          <el-option
+            :value="ChatPL.RetrievalType.RAG_EMBEDDING_SEARCH"
+            label="RAG向量化搜索"
+          ></el-option>
+          <el-option
+            :value="ChatPL.RetrievalType.TOOL_INDEXED_SEARCH"
+            label="TOOL索引搜索"
+          ></el-option>
+        </el-select>
+      </el-form-item>
+
+      <el-form-item
         prop="agents_ids"
         label="代理"
         :rules="{ required: false, type: 'array' }"
@@ -210,6 +230,7 @@ function createAgent() {
     icon: "🤖",
     id: uuid(),
     knowledge_bases_ids: [],
+    retrieval_type: undefined,
     messages: [
       {
         role: ChatAL.Role.System,

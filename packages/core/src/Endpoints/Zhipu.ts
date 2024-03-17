@@ -1,6 +1,7 @@
 import { SignJWT } from "jose";
-import { ModelType, Models, ModelsKeys } from "../Models/index.js";
-import { Endpoint } from "./Endpoint.js";
+import { Models, ModelsKeys } from "../Models/index.js";
+import { Endpoint } from "../Endpoint.js";
+import { ModelType } from "../Model.js";
 
 export interface ZhipuConfig {
   zhipu_endpoint?: string;

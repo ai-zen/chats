@@ -1,9 +1,4 @@
 import type { JSONSchema7 } from "json-schema";
-import {
-  ChatCompletionModelsKeys,
-  EmbeddingModelsKeys,
-  ModelsKeys,
-} from "./Models/index.js";
 
 /**
  * Chat Abstraction Layer
@@ -68,6 +63,7 @@ export namespace ChatAL {
 
   export interface Message {
     name?: string;
+    raw_content?: string | MessageContentSection[];
     content?: string | MessageContentSection[];
     function_call?: FunctionCall;
     tool_call_id?: number;
@@ -112,45 +108,5 @@ export namespace ChatAL {
   export interface ToolDefine {
     type: "function";
     function: FunctionDefine;
-  }
-
-  export interface ChatContext {
-    model_key: ChatCompletionModelsKeys;
-    model_config: any;
-    messages: Message[];
-    knowledge_bases: KnowledgeBase[];
-    tools: Tool[];
-    agents: Agent[];
-  }
-
-  export interface Tool extends ToolDefine {
-    code?: string;
-    callback?: (parsed_args: any) => any;
-  }
-
-  export interface Agent extends ToolDefine, ChatContext {}
-
-  export interface Scene extends ChatContext {}
-
-  export interface Endpoint {
-    enabled_models_keys: ModelsKeys[];
-    endpoint_config: any;
-  }
-
-  export interface RequestConfig {
-    url: string;
-    headers: Record<string, string>;
-    body: Record<string, any>;
-  }
-
-  export interface KnowledgeItem {
-    text: string;
-    vector: number[];
-  }
-
-  export interface KnowledgeBase {
-    model_key: EmbeddingModelsKeys;
-    model_config: any;
-    data: KnowledgeItem[];
   }
 }

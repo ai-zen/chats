@@ -9,11 +9,11 @@
     <div class="message-body">
       <div class="message-content">
         <div
-          v-if="formattedMessageContent.isHtml"
-          v-html="formattedMessageContent.content"
+          v-if="renderedContent.html"
+          v-html="renderedContent.output"
           class="markdown-body"
         ></div>
-        <div v-else class="raw">{{ formattedMessageContent.content }}</div>
+        <div v-else class="raw">{{ renderedContent.output }}</div>
       </div>
 
       <div class="message-append">
@@ -52,8 +52,9 @@
         </div>
       </div>
     </div>
-    <!-- <div class="message-footer">
-    </div> -->
+    <div class="message-footer">
+      <slot name="footer"></slot>
+    </div>
   </div>
 </template>
 
@@ -80,12 +81,6 @@ const props = defineProps({
   },
 });
 
-const emits = defineEmits<{
-  // (event: "continue"): void;
-  // (event: "change:score", message: ChatMessage, score?: number): void;
-  // (event: "change:favorite", message: ChatMessage, favorite?: boolean): void;
-}>();
-
 /**
  * 是否使用 markdown
  */
@@ -94,24 +89,25 @@ const isUseMarkdown = ref(true);
 /**
  * 格式化输出消息内容
  */
-const formattedMessageContent = computed(() => {
-  const message = props.message;
-  const isNoContent = !message.content?.length && !message.function_call;
+const renderedContent = computed((): { output: string; html: boolean } => {
+  const msg = props.message;
+  const msg_content = msg.raw_content || msg.content;
+  const is_empty = !msg_content?.length && !msg.function_call;
 
-  if (message.status == ChatAL.MessageStatus.Pending && isNoContent) {
-    return { content: "思考中...", isHtml: false };
-  } else if (message.status == ChatAL.MessageStatus.Writing && isNoContent) {
-    return { content: "输出中...", isHtml: false };
-  } else if (message.status == ChatAL.MessageStatus.Error) {
+  if (msg.status == ChatAL.MessageStatus.Pending && is_empty) {
+    return { output: "思考中...", html: false };
+  } else if (msg.status == ChatAL.MessageStatus.Writing && is_empty) {
+    return { output: "输出中...", html: false };
+  } else if (msg.status == ChatAL.MessageStatus.Error) {
     return {
-      content: message.content?.toString() || "发生未知错误",
-      isHtml: false,
+      output: msg_content?.toString() || "发生未知错误",
+      html: false,
     };
   } else {
-    let content = "";
+    let output = "";
 
-    if (message.content instanceof Array) {
-      message.content
+    if (msg_content instanceof Array) {
+      msg_content
         .map((section) => {
           switch (section.type) {
             case "image_url":
@@ -122,53 +118,50 @@ const formattedMessageContent = computed(() => {
         })
         .join("");
     } else {
-      content = message.content || "";
+      output = msg_content || "";
     }
 
-    if (
-      message.role == ChatAL.Role.Function ||
-      message.role == ChatAL.Role.Tool
-    ) {
-      content = `\`${message.name}\`\n\n`;
-      content += `\n\`\`\`json\n${message.content}\n\`\`\``;
+    if (msg.role == ChatAL.Role.Function || msg.role == ChatAL.Role.Tool) {
+      output = `\`${msg.name}\`\n\n`;
+      output += `\n\`\`\`json\n${msg_content}\n\`\`\``;
     }
 
-    if (message.function_call) {
-      if (content) content += "\n\n---\n\n";
-      content += `正在调用函数：\`${message.function_call?.name}\`\n\n`;
-      content += `\n\`\`\`json\n${message.function_call?.arguments}\n\`\`\``;
+    if (msg.function_call) {
+      if (output) output += "\n\n---\n\n";
+      output += `正在调用函数：\`${msg.function_call?.name}\`\n\n`;
+      output += `\n\`\`\`json\n${msg.function_call?.arguments}\n\`\`\``;
     }
 
-    if (message.tool_calls?.length) {
-      message.tool_calls.forEach((tool_call) => {
-        if (content) content += "\n\n---\n\n";
-        content += `正在调用工具函数：\`${tool_call.function?.name}\`\n\n`;
-        content += `\n\`\`\`json\n${tool_call.function?.arguments}\n\`\`\``;
+    if (msg.tool_calls?.length) {
+      msg.tool_calls.forEach((tool_call) => {
+        if (output) output += "\n\n---\n\n";
+        output += `正在调用工具函数：\`${tool_call.function?.name}\`\n\n`;
+        output += `\n\`\`\`json\n${tool_call.function?.arguments}\n\`\`\``;
       });
     }
 
     // TODO: 以下内容改为markdown警告展示
-    if (message.finish_reason == ChatAL.FinishReason.ContentFilter) {
-      content += "内容很不幸被过滤了";
-    } else if (message.finish_reason == ChatAL.FinishReason.Length) {
-      content += "内容超出长度限制";
+    if (msg.finish_reason == ChatAL.FinishReason.ContentFilter) {
+      output += "内容很不幸被过滤了";
+    } else if (msg.finish_reason == ChatAL.FinishReason.Length) {
+      output += "内容超出长度限制";
     }
 
-    if (!content) {
-      content = "未获得任何内容";
+    if (!output) {
+      output = "未获得任何内容";
     }
 
     if (isUseMarkdown.value) {
-      return { content: marked.parse(content) as string, isHtml: true };
+      return { output: marked.parse(output) as string, html: true };
     } else {
-      return { content: content, isHtml: false };
+      return { output, html: false };
     }
   }
 });
 
 async function onCopyClick() {
   try {
-    await navigator.clipboard.writeText(formattedMessageContent.value.content);
+    await navigator.clipboard.writeText(renderedContent.value.output);
     ElMessage.success("复制成功");
   } catch {}
 }

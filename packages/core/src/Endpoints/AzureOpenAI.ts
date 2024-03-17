@@ -1,5 +1,6 @@
-import { ModelType, Models, ModelsKeys } from "../Models/index.js";
-import { Endpoint } from "./Endpoint.js";
+import { Models, ModelsKeys } from "../Models/index.js";
+import { Endpoint } from "../Endpoint.js";
+import { ModelType } from "../Model.js";
 
 export interface AzureOpenAIConfig {
   azure_endpoint: string;
