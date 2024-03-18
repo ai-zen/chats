@@ -122,8 +122,8 @@ const renderedContent = computed((): { output: string; html: boolean } => {
     }
 
     if (msg.role == ChatAL.Role.Function || msg.role == ChatAL.Role.Tool) {
-      output = `\`${msg.name}\`\n\n`;
-      output += `\n\`\`\`json\n${msg_content}\n\`\`\``;
+      output = `\`${msg.name}\`\n`;
+      output += `\n---\n${msg.content}\n`;
     }
 
     if (msg.function_call) {

@@ -44,6 +44,7 @@
         class="content"
         v-model="(message.content as string)"
         type="textarea"
+        resize="vertical"
         placeholder="请输入聊天内容"
       ></el-input>
     </div>
