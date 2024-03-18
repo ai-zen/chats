@@ -11,19 +11,18 @@ export class IndexedSearchTool implements Tool {
   constructor(options: PickRequired<IndexedSearchTool, "entries">) {
     this.type = options.type ?? "function";
     this.entries = options.entries ?? [];
-
-    const indexed = options.entries.map((x) => x.title).join(", ");
-
     this.function = {
       name: "indexedSearch",
-      description: `You can use this function to query the following relevant information: ${indexed}`,
+      description: `You can use this function to query the following relevant information`,
       parameters: {
         type: "object",
         properties: {
           keywords: {
-            type: "string",
-            description:
-              "Enter the keywords you want to search, separated by commas. For example: A, B, C.",
+            description: "Enter the keywords you want to search",
+            type: "array",
+            items: {
+              enum: options.entries.map((x) => x.title),
+            },
           },
         },
       },
@@ -31,10 +30,13 @@ export class IndexedSearchTool implements Tool {
   }
 
   async exec(ctx: FunctionCallContext) {
+    // GPT may mistakenly input a string instead of an array when there is only one keyword.
+    const keywords: string[] =
+      ctx.parsed_args.keywords instanceof Array
+        ? ctx.parsed_args.keywords
+        : [ctx.parsed_args.keywords];
+
     const result: Record<string, string[]> = {};
-    const keywords = ctx.parsed_args.keywords
-      .split(",")
-      .map((x: string) => x.trim());
 
     this.entries.forEach((x) => {
       if (keywords.includes(x.title)) {

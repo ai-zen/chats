@@ -59,11 +59,11 @@
         class="chat-content"
         v-loading="sceneState.isLoading || sessionState.isLoading"
       >
-        <template v-if="sessionState.current && chatRef">
-          <el-scrollbar class="scroll-y">
+        <template v-if="sessionState.current">
+          <el-scrollbar class="scroll-y" ref="scrollBarRef">
             <div class="messages">
               <template
-                v-for="(message, _index) of chatRef?.messages"
+                v-for="(message, _index) of sessionState.current.messages"
                 :key="_index"
               >
                 <ChatMessage v-if="!message.hidden" :message="message" />
@@ -181,7 +181,6 @@
 import {
   Chat,
   ChatCompletionModels,
-  Message,
   Models,
   ModelsKeys,
 } from "@ai-zen/chats-core";
@@ -208,6 +207,8 @@ import {
 } from "../../composables";
 import { useDeserialize } from "../../composables/useDeserialize";
 import { ChatPL } from "../../types/ChatPL";
+import { debounce } from "../../utils/debounce";
+import { nextFrame } from "../../utils/sleep";
 
 const scrollBarRef = ref<InstanceType<typeof ElScrollbar> | undefined>();
 
@@ -250,17 +251,13 @@ function initChat() {
 
   const scene = formatScene(scenePO);
 
-  chatRef.value?.events.destroy();
-
   chatRef.value = new Chat({
     ...scene,
     model_key: sessionPO.model_key || scene.model_key,
     model_config: sessionPO.model_config || scene.model_config,
-    messages: sessionPO.messages.map((x) => new Message(x)) as Message[],
+    messages: sessionPO.messages,
     endpoints: endpointsInstances.value,
   });
-
-  chatRef.value?.events.on("chunk", onChunk);
 }
 
 watch(
@@ -302,21 +299,14 @@ async function onSendClick() {
   // 发送，并将结果同步到会话，触发自动保存
   const question = sessionState.current.newMessage;
   sessionState.current.newMessage = "";
-  sessionState.current.messages = await chatRef.value.send(question);
-}
-
-function onAbortClick() {
-  chatRef.value?.abort();
+  await chatRef.value.send(question);
 }
 
 /**
- * 如果接收到消息前处于底部，则滚动到底部
+ * 响应点击中止
  */
-async function onChunk() {
-  const scrollBarEl = scrollBarRef.value?.wrapRef;
-  if (!scrollBarEl) return;
-  await nextTick();
-  scrollBarEl.scrollTo({ behavior: "smooth", top: scrollBarEl.scrollHeight });
+function onAbortClick() {
+  chatRef.value?.abort();
 }
 
 /**
@@ -356,6 +346,35 @@ function onSessionTabClick(session: ChatPL.SessionPO) {
   sessionState.current = session;
   sceneState.current = getScene(session.scene_id) ?? null;
 }
+
+// 滚动到底部（带防抖）
+const scrollToBottomWithDebounce = debounce(async () => {
+  await nextTick();
+  await nextFrame();
+
+  const scrollBarEl = scrollBarRef.value?.wrapRef;
+  if (!scrollBarEl) return;
+
+  scrollBarEl.scrollTo({ behavior: "smooth", top: scrollBarEl.scrollHeight });
+}, 100);
+
+// 任意消息内容变化触发滚动
+watch(
+  () => sessionState.current?.messages,
+  () => {
+    const scrollBarEl = scrollBarRef.value?.wrapRef;
+    if (!scrollBarEl) return;
+
+    // 判断渲染前是否处于底部，如果处于底部那么就在下一次渲染后滚动到底部
+    if (
+      scrollBarEl.scrollTop >=
+      scrollBarEl.scrollHeight - scrollBarEl.clientHeight - 200
+    ) {
+      scrollToBottomWithDebounce();
+    }
+  },
+  { deep: true }
+);
 
 const sessionSettingFormRef = ref<InstanceType<typeof ElForm> | null>(null);
 

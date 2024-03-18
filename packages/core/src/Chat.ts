@@ -21,7 +21,7 @@ export class Chat extends ChatContext {
   }
 
   private lastController: AbortController | undefined = undefined;
-  private lastReceiver: Message | undefined = undefined;
+  private lastReceiver: ChatAL.Message | undefined = undefined;
 
   /**
    * Run the conversation to the server.
@@ -122,7 +122,7 @@ export class Chat extends ChatContext {
    * Parse the streamed response data.
    */
   async parseStreamData(
-    receiver: Message,
+    receiver: ChatAL.Message,
     stream: AsyncQueue<ChatAL.StreamResponseData>
   ) {
     for await (const chunk of stream) {
@@ -257,7 +257,7 @@ export class Chat extends ChatContext {
    * Handle the tool call.
    * @returns This function returns a result indicating whether a new round of chat is needed.
    */
-  async handelToolCall(receiver: Message): Promise<boolean> {
+  async handelToolCall(receiver: ChatAL.Message): Promise<boolean> {
     const tasks: ChatAL.ToolCall[] = [];
 
     if (receiver.tool_calls?.length) {

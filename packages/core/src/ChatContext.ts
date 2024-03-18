@@ -1,6 +1,6 @@
+import { ChatAL } from "./ChatAL.js";
 import { PickRequired } from "./Common.js";
 import { Endpoint } from "./Endpoint.js";
-import { Message } from "./Message.js";
 import { ChatCompletionModelsKeys } from "./Models/index.js";
 import { Rag } from "./Rag.js";
 import { Tool } from "./Tool.js";
@@ -8,7 +8,7 @@ import { Tool } from "./Tool.js";
 export class ChatContext {
   model_key: ChatCompletionModelsKeys;
   model_config: any;
-  messages: Message[];
+  messages: ChatAL.Message[];
   tools: Tool[];
   rag?: Rag;
   endpoints: Endpoint[];
@@ -27,7 +27,7 @@ export class ChatContext {
   /**
    * Add a message to the message list.
    */
-  append(message: Message) {
+  append(message: ChatAL.Message) {
     this.messages.push(message);
     return this.messages.at(-1)!;
   }

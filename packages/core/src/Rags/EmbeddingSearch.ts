@@ -4,6 +4,7 @@ import { Rag } from "../Rag.js";
 import { Endpoint } from "../Endpoint.js";
 import { KnowledgeBase } from "../KnowledgeBase.js";
 import { PickRequired } from "../Common.js";
+import { ChatAL } from "../ChatAL.js";
 
 export class EmbeddingSearch extends Rag {
   knowledge_bases: KnowledgeBase[];
@@ -23,11 +24,12 @@ export class EmbeddingSearch extends Rag {
       .join("\n")}`;
   }
 
-  async rewrite(questionMessage: Message) {
+  async rewrite(questionMessage: ChatAL.Message) {
     const references = await this.query(questionMessage.content!.toString());
     if (references?.length) {
-      questionMessage.rewrite(
-        this.template(questionMessage.content!.toString(), references)
+      Message.rewrite(
+        questionMessage,
+        this.template(Message.stringifyContent(questionMessage), references)
       );
     }
   }

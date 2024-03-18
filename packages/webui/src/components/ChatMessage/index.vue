@@ -60,7 +60,7 @@
 
 <script setup lang="ts">
 import { PropType, computed, ref } from "vue";
-import { marked } from "./marked";
+import md from "./md";
 import { ChatAL } from "@ai-zen/chats-core";
 import { ElMessage } from "element-plus";
 
@@ -122,8 +122,8 @@ const renderedContent = computed((): { output: string; html: boolean } => {
     }
 
     if (msg.role == ChatAL.Role.Function || msg.role == ChatAL.Role.Tool) {
-      output = `\`${msg.name}\`\n`;
-      output += `\n---\n${msg.content}\n`;
+      output = `\`${msg.name}\`\n\n`;
+      output += `\n\`\`\`json\n${msg_content}\n\`\`\``;
     }
 
     if (msg.function_call) {
@@ -152,7 +152,7 @@ const renderedContent = computed((): { output: string; html: boolean } => {
     }
 
     if (isUseMarkdown.value) {
-      return { output: marked.parse(output) as string, html: true };
+      return { output: md.render(output) as string, html: true };
     } else {
       return { output, html: false };
     }

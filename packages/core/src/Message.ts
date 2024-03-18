@@ -38,18 +38,21 @@ export class Message implements ChatAL.Message {
   /**
    * Returns string or JSON string for the content.
    */
-  toString() {
-    return typeof this.content === "string"
-      ? this.content
-      : JSON.stringify(this.content);
+  static stringifyContent(message: Message) {
+    return typeof message.content === "string"
+      ? message.content
+      : JSON.stringify(message.content);
   }
 
   /**
    * Rewrite the message. The original content will be stored in `raw_content`.
    */
-  rewrite(newContent: string | ChatAL.MessageContentSection[]) {
-    this.raw_content = this.raw_content || this.content;
-    this.content = newContent;
+  static rewrite(
+    message: Message,
+    newContent: string | ChatAL.MessageContentSection[]
+  ) {
+    message.raw_content = message.raw_content || message.content;
+    message.content = newContent;
   }
 
   /**
