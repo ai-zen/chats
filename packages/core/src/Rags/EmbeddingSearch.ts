@@ -1,9 +1,9 @@
-import { Message } from "../Message";
-import { EmbeddingModels, EmbeddingModel } from "../Models";
-import { Rag } from "../Rag";
-import { Endpoint } from "../Endpoint";
-import { KnowledgeBase } from "../KnowledgeBase";
-import { PickRequired } from "../Common";
+import { Message } from "../Message.js";
+import { EmbeddingModels, EmbeddingModel } from "../Models/index.js";
+import { Rag } from "../Rag.js";
+import { Endpoint } from "../Endpoint.js";
+import { KnowledgeBase } from "../KnowledgeBase.js";
+import { PickRequired } from "../Common.js";
 
 export class EmbeddingSearch extends Rag {
   knowledge_bases: KnowledgeBase[];

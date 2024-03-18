@@ -3,28 +3,26 @@ import {
   AzureOpenAI,
   Chat,
   ChatAL,
-  Tool as CallbackTool,
+  CallbackTool,
 } from "./dist/index.js";
 
 async function main() {
-  const endpoints = [
-    // new OpenAI({
-    //   enabled_models_keys: ["GPT35Turbo_1106"],
-    //   api_key: "YOUR_OPENAI_KEY",
-    // }),
-    new AzureOpenAI({
-      enabled_models_keys: ["GPT35Turbo_1106"],
-      azure_endpoint: "https://YOUR_AZURE_RESOURCES.openai.azure.com/",
-      api_key: "YOUR_AZURE_OPENAI_KEY",
-      api_version: "2024-02-15-preview",
-      deployments: {
-        GPT35Turbo_1106: "YOUR_MODEL_DEPLOYMENT_NAME",
-      },
-    }),
-  ];
-
   const chat = new Chat({
-    endpoints,
+    endpoints: [
+      // new OpenAI({
+      //   enabled_models_keys: ["GPT35Turbo_1106"],
+      //   api_key: "YOUR_OPENAI_KEY",
+      // }),
+      new AzureOpenAI({
+        enabled_models_keys: ["GPT35Turbo_1106"],
+        azure_endpoint: "https://YOUR_AZURE_RESOURCES.openai.azure.com/",
+        api_key: "YOUR_AZURE_OPENAI_KEY",
+        api_version: "2024-02-15-preview",
+        deployments: {
+          GPT35Turbo_1106: "YOUR_MODEL_DEPLOYMENT_NAME",
+        },
+      }),
+    ],
     model_key: "GPT35Turbo_1106",
     messages: [
       {
