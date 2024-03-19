@@ -41,21 +41,22 @@ export function useDeserialize(options: {
       ...options.getAgents(chatContextPO.agents_ids).map(formatAgent),
     ];
 
-    const knowledge_bases = options
-      .getKnowledgeBases(chatContextPO.knowledge_bases_ids)
-      .map(formatKnowledgeBase);
-
     let rag: Rag | undefined = undefined;
     if (
       chatContextPO.retrieval_type == ChatPL.RetrievalType.RAG_EMBEDDING_SEARCH
     ) {
       rag = new EmbeddingSearch({
-        knowledge_bases,
+        knowledge_bases: options
+          .getKnowledgeBases(chatContextPO.knowledge_bases_ids)
+          .map(formatKnowledgeBase),
       });
     } else if (
       chatContextPO.retrieval_type == ChatPL.RetrievalType.TOOL_INDEXED_SEARCH
     ) {
-      const entries = knowledge_bases.map((x) => x.data).flat();
+      const entries = options
+        .getKnowledgeBases(chatContextPO.knowledge_bases_ids)
+        .map((x) => x.data)
+        .flat();
       tools.push(new IndexedSearchTool({ entries }));
     }
 

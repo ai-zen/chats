@@ -31,6 +31,13 @@
         ></el-input>
       </el-form-item>
       <el-form-item
+        label="关键字"
+        prop="keywords"
+        :rules="{ required: true, type: 'array', message: '请输入关键字' }"
+      >
+        <TagsEditor v-model="dialogState.form.keywords" />
+      </el-form-item>
+      <el-form-item
         label="内容"
         prop="text"
         :rules="{ required: true, message: '请输入内容' }"
@@ -66,6 +73,7 @@ import { useEndpoint } from "../../../composables/useEndpoints";
 import { ChatPL } from "../../../types/ChatPL";
 import { FormMode } from "../../../types/Common";
 import { uuid } from "../../../utils/uuid";
+import { TagsEditor } from "../../../components";
 
 const emit = defineEmits<{
   save: [mode: FormMode, data: ChatPL.KnowledgeItemPO];
@@ -76,6 +84,7 @@ function createForm(): ChatPL.KnowledgeItemPO {
     id: uuid(),
     title: "",
     text: "",
+    keywords: [],
     vector: [],
   };
 }

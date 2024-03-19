@@ -3,10 +3,15 @@ import { PickRequired } from "../Common.js";
 import { FunctionCallContext } from "../FunctionCallContext.js";
 import { Tool } from "../Tool.js";
 
+export interface IndexedSearchEntry {
+  keywords: string[];
+  text: string;
+}
+
 export class IndexedSearchTool implements Tool {
   type: "function";
   function: ChatAL.FunctionDefine;
-  entries: { title: string; text: string }[];
+  entries: IndexedSearchEntry[];
 
   constructor(options: PickRequired<IndexedSearchTool, "entries">) {
     this.type = options.type ?? "function";
@@ -21,7 +26,9 @@ export class IndexedSearchTool implements Tool {
             description: "Enter the keywords you want to search",
             type: "array",
             items: {
-              enum: options.entries.map((x) => x.title),
+              enum: Array.from(
+                new Set(options.entries.map((x) => x.keywords).flat())
+              ),
             },
           },
         },
@@ -36,15 +43,20 @@ export class IndexedSearchTool implements Tool {
         ? ctx.parsed_args.keywords
         : [ctx.parsed_args.keywords];
 
-    const result: Record<string, string[]> = {};
+    const results = new Set<IndexedSearchEntry>();
 
-    this.entries.forEach((x) => {
-      if (keywords.includes(x.title)) {
-        result[x.title] ??= [];
-        result[x.title].push(x.text);
+    // Keep only useful fields.
+    const entries = this.entries.map((x) => ({
+      keywords: x.keywords,
+      text: x.text,
+    }));
+
+    entries.forEach((entry) => {
+      if (entry.keywords.some((keyword) => keywords.includes(keyword))) {
+        results.add(entry);
       }
     });
 
-    return JSON.stringify(result);
+    return JSON.stringify(Array.from(results));
   }
 }

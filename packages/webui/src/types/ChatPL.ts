@@ -63,6 +63,7 @@ export namespace ChatPL {
   export interface KnowledgeItemPO {
     id: string;
     title: string;
+    keywords: string[];
     text: string;
     vector: number[];
   }
