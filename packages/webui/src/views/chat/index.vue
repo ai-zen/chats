@@ -491,7 +491,7 @@ onMounted(async () => {
 
 .scenes-side-bar {
   background-color: var(--el-bg-color);
-  width: 200px;
+  width: 220px;
   position: relative;
   z-index: 2;
   // border-right: var(--el-border);
@@ -505,7 +505,7 @@ onMounted(async () => {
     box-sizing: border-box;
     width: 100%;
     background-color: var(--el-bg-color);
-    padding: 8px 0px;
+    padding: 12px 0px;
     // margin-bottom: 12px;
     color: var(--el-text-color-primary);
     display: flex;
@@ -531,10 +531,11 @@ onMounted(async () => {
     }
 
     .title {
+      font-family: monospace;
       margin-left: 12px;
       width: 0px;
       flex-grow: 1;
-      font-size: 14px;
+      font-size: 12px;
       word-break: break-all;
     }
 

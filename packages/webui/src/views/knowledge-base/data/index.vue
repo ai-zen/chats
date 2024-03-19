@@ -15,7 +15,7 @@
     <div class="list" v-loading="detailState.isLoading">
       <el-empty
         class="empty"
-        v-if="!detailState.detail?.data.length"
+        v-if="!detailState.detail?.data.length && !detailState.isLoading"
       ></el-empty>
 
       <div class="item" v-for="item of detailState.detail?.data" :key="item.id">

@@ -69,8 +69,8 @@
           @click="submit"
           :icon="Check"
           :loading="formState.isSaving"
-          >完成
-        </el-button>
+          >完成</el-button
+        >
       </el-form-item>
 
       <!-- <el-form-item>

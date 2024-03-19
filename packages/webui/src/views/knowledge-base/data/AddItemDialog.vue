@@ -2,7 +2,7 @@
   <el-dialog
     :title="FormMode.Create ? '新增条目' : '编辑条目'"
     v-model="dialogState.isOpen"
-    width="720"
+    width="720px"
   >
     <el-form
       :model="dialogState.form"
