@@ -20,7 +20,11 @@
       >
     </el-row>
 
-    <div v-if="listState.list?.length" class="card-list">
+    <div class="card-list" v-loading="listState.isLoading">
+      <div v-if="!listState.list?.length && !listState.isLoading" class="empty">
+        <el-empty></el-empty>
+      </div>
+
       <div class="card" v-for="(item, index) of listState.list" :key="index">
         <div class="title-row">
           <div class="icon">{{ item.icon }}</div>
@@ -47,10 +51,6 @@
           </div>
         </div>
       </div>
-    </div>
-
-    <div v-else class="empty">
-      <el-empty></el-empty>
     </div>
 
     <!-- <el-row>

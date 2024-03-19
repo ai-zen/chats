@@ -180,8 +180,12 @@
       </el-form-item>
 
       <el-form-item>
-        <el-button type="primary" @click="submit">
-          <el-icon><Check /></el-icon>&ensp;完成
+        <el-button
+          type="primary"
+          @click="submit"
+          :icon="Check"
+          :loading="formState.isSaving"
+          >完成
         </el-button>
       </el-form-item>
     </el-form>

@@ -206,5 +206,10 @@ const OUTPUT_MAX_TOKENS = computed(() => {
 <style lang="scss" scoped>
 .tips {
   width: 100%;
+  margin-bottom: 10px;
+}
+
+:deep() .el-switch--small .el-switch__label {
+  height: auto;
 }
 </style>

@@ -53,11 +53,7 @@
         </el-select>
       </el-form-item>
 
-      <el-form-item
-        prop="enabled_models_keys"
-        label="启用的模型"
-        :rules="{ required: true, message: '请选择模型' }"
-      >
+      <el-form-item prop="enabled_models_keys" label="启用的模型">
         <el-select v-model="formState.form.enabled_models_keys" multiple>
           <el-option
             v-for="model of Models"
@@ -80,8 +76,12 @@
       </component>
 
       <el-form-item>
-        <el-button type="primary" @click="submit">
-          <el-icon> <Check /> </el-icon>&ensp;完成
+        <el-button
+          type="primary"
+          @click="submit"
+          :icon="Check"
+          :loading="formState.isSaving"
+          >完成
         </el-button>
       </el-form-item>
 

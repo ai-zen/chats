@@ -44,7 +44,8 @@
 
 <script setup lang="ts">
 import type { JSONSchema7 } from "json-schema";
-import { PropType, nextTick, ref, watch } from "vue";
+import { PropType, inject, nextTick, ref, watch } from "vue";
+import { formItemContextKey, FormItemContext } from "element-plus";
 
 const props = defineProps({
   modelValue: {
@@ -120,6 +121,15 @@ const addProperty = () => {
 const removeProperty = (index: number) => {
   metaData.value.splice(index, 1);
 };
+
+const elFormItem = inject(formItemContextKey, {} as FormItemContext);
+
+watch(
+  () => props.modelValue,
+  () => {
+    elFormItem?.validate?.("change").catch(console.warn);
+  }
+);
 </script>
 
 <style lang="scss" scoped>

@@ -39,6 +39,8 @@
           v-model="dialogState.form.text"
           placeholder="请输入内容"
           type="textarea"
+          resize="vertical"
+          rows="10"
         ></el-input>
       </el-form-item>
     </el-form>

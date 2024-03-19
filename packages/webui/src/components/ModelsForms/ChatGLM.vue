@@ -142,7 +142,7 @@ const OUTPUT_MAX_TOKENS = computed(() => {
   margin-bottom: 10px;
 }
 
-:deep() .rcd-switch--small .rcd-switch__label {
+:deep() .el-switch--small .el-switch__label {
   height: auto;
 }
 </style>

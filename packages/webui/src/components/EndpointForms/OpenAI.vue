@@ -6,7 +6,11 @@
     />
   </el-form-item>
 
-  <el-form-item prop="endpoint_config.api_key" label="api_key">
+  <el-form-item
+    prop="endpoint_config.api_key"
+    label="api_key"
+    :rules="{ required: true, message: '请输入 api_key' }"
+  >
     <el-input
       v-model="props.endpoint_config.api_key"
       placeholder="请输入 api_key"

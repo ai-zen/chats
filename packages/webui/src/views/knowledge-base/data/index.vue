@@ -12,7 +12,12 @@
       </el-button>
     </div>
 
-    <div class="list">
+    <div class="list" v-loading="detailState.isLoading">
+      <el-empty
+        class="empty"
+        v-if="!detailState.detail?.data.length"
+      ></el-empty>
+
       <div class="item" v-for="item of detailState.detail?.data" :key="item.id">
         <div class="title-row">
           <div class="title">{{ item.title }}</div>
@@ -41,8 +46,6 @@
         </div>
       </div>
     </div>
-
-    <el-empty class="empty" v-if="!detailState.detail?.data.length"></el-empty>
 
     <AddItemDialog @save="onAddItemDialogSave" ref="addItemDialogRef" />
   </div>
@@ -73,6 +76,7 @@ const detailState = reactive({
  */
 async function initDetail() {
   try {
+    detailState.isLoading = true;
     if (typeof route.query.id == "string") {
       const knowledgeBase = await api.getKnowledgeBase(route.query.id);
       if (!knowledgeBase)
@@ -83,6 +87,8 @@ async function initDetail() {
     }
   } catch (error: any) {
     ElMessage.error(`初始化知识库失败：${error?.message}`);
+  } finally {
+    detailState.isLoading = false;
   }
 }
 
@@ -173,8 +179,10 @@ onMounted(() => {
 }
 
 .list {
+  flex-grow: 1;
   display: flex;
   flex-wrap: wrap;
+  align-content: flex-start;
   padding: 10px;
   .item {
     width: 240px;

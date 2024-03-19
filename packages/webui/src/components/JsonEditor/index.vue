@@ -59,9 +59,10 @@
 </template>
 
 <script name="JsonEditor" setup lang="ts">
-import { nextTick, ref, watch } from "vue";
+import { inject, nextTick, ref, watch } from "vue";
 import ArrayEditor from "../ArrayEditor/index.vue";
 import JsonEditor from "../JsonEditor/index.vue";
+import { formItemContextKey, FormItemContext } from "element-plus";
 
 const props = defineProps({
   modelValue: {
@@ -142,6 +143,15 @@ function onTypeChange(index: number, type: string) {
       break;
   }
 }
+
+const elFormItem = inject(formItemContextKey, {} as FormItemContext);
+
+watch(
+  () => props.modelValue,
+  () => {
+    elFormItem?.validate?.("change").catch(console.warn);
+  }
+);
 </script>
 
 <style lang="scss" scoped>

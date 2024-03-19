@@ -38,7 +38,8 @@
 <script name="DeploymentsEditor" setup lang="ts">
 import { ModelsKeys } from "@ai-zen/chats-core";
 import { ElMessage } from "element-plus";
-import { PropType, nextTick, ref, watch } from "vue";
+import { PropType, inject, nextTick, ref, watch } from "vue";
+import { formItemContextKey, FormItemContext } from "element-plus";
 
 const props = defineProps({
   modelValue: {
@@ -103,6 +104,15 @@ const addProperty = () => {
 const removeProperty = (index: number) => {
   editableObjectEntries.value.splice(index, 1);
 };
+
+const elFormItem = inject(formItemContextKey, {} as FormItemContext);
+
+watch(
+  () => props.modelValue,
+  () => {
+    elFormItem?.validate?.("change").catch(console.warn);
+  }
+);
 </script>
 
 <style lang="scss" scoped>

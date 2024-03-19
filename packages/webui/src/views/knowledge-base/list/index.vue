@@ -20,7 +20,11 @@
       >
     </el-row>
 
-    <div v-if="listState.list?.length" class="card-list">
+    <div class="card-list" v-loading="listState.isLoading">
+      <div v-if="!listState.list?.length && !listState.isLoading" class="empty">
+        <el-empty></el-empty>
+      </div>
+
       <div class="card" v-for="(item, index) of listState.list" :key="index">
         <div class="title-row">
           <div class="icon">{{ item.icon }}</div>
@@ -58,10 +62,6 @@
       </div>
     </div>
 
-    <div v-else class="empty">
-      <el-empty></el-empty>
-    </div>
-
     <!-- <el-row>
       <el-pagination
         :total="listState.total"
@@ -75,7 +75,13 @@
 import { ElMessage, ElMessageBox } from "element-plus";
 import { onMounted, reactive } from "vue";
 import { ChatPL } from "../../../types/ChatPL";
-import { Plus, Edit, Delete, Search, FolderOpened } from "@element-plus/icons-vue";
+import {
+  Plus,
+  Edit,
+  Delete,
+  Search,
+  FolderOpened,
+} from "@element-plus/icons-vue";
 import { useRouter } from "vue-router";
 import * as api from "../../../api";
 import { FormMode } from "../../../types/Common";
