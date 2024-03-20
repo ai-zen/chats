@@ -47,7 +47,7 @@ export class OpenAI extends Endpoint<OpenAIConfig> {
 
     return {
       ...this.endpoint_config,
-      url: `${openai_endpoint}/${path}`,
+      url: `${openai_endpoint}${path}`,
       headers: {
         "Content-Type": "application/json",
         ...this.endpoint_config?.headers,

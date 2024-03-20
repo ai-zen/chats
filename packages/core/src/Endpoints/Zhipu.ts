@@ -38,7 +38,7 @@ export class Zhipu extends Endpoint<ZhipuConfig> {
 
     return {
       ...this.endpoint_config,
-      url: `${zhipu_endpoint}/${path}`,
+      url: `${zhipu_endpoint}${path}`,
       headers: {
         "Content-Type": "application/json",
         ...this.endpoint_config?.headers,
