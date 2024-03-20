@@ -90,7 +90,7 @@ export function useSession(options: {
       if (index == -1) return;
       sessionState.list.splice(index, 1);
       if (sessionId == sessionState.current?.id) {
-        sessionState.current = sessionState.list[0] || null;
+        sessionState.current = sessionState.list.at(-1) || undefined;
       }
       await api.deleteSession(sessionId);
     } finally {
