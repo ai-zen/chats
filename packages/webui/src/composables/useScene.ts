@@ -47,12 +47,6 @@ export function useScene() {
           omit: true,
           status: ChatAL.MessageStatus.Completed,
         },
-        {
-          role: ChatAL.Role.System,
-          content: "你是一个AI助手，专门帮助用户查找信息。",
-          hidden: true,
-          status: ChatAL.MessageStatus.Completed,
-        },
       ],
       model_config: [],
       title: "空白场景",

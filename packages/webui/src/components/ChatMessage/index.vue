@@ -106,11 +106,11 @@ const renderedContent = computed((): { output: string; html: boolean } => {
     let output = "";
 
     if (msg_content instanceof Array) {
-      msg_content
+      output = msg_content
         .map((section) => {
           switch (section.type) {
             case "image_url":
-              return `<img src="${section.image_url}" />`;
+              return `![a image](${section.image_url?.url})`;
             case "text":
               return section.text;
           }

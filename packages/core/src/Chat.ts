@@ -100,6 +100,11 @@ export class Chat extends ChatContext {
         receiver.status = ChatAL.MessageStatus.Completed;
 
         if (await this.handleToolCall(receiver)) {
+          // @ts-ignore
+          if (receiver.status === ChatAL.MessageStatus.Aborted) {
+            break abortBlock;
+          }
+
           this.append(Message.Assistant());
           await this.run();
         }
@@ -204,7 +209,7 @@ export class Chat extends ChatContext {
                 ] as ChatAL.TextContentSection;
                 currentSection["type"] = "text";
                 currentSection["text"] ??= "";
-                currentSection["text"] += currentSection.text;
+                currentSection["text"] += deltaSection.text;
               }
             }
           } else {
@@ -363,12 +368,22 @@ export class Chat extends ChatContext {
 
   /**
    * Send a user question.
-   * @param question The user question.
+   * @param content The user question.
    * @returns A promise that resolves to the conversation messages.
    */
-  async send(question: string) {
+  async send(content: ChatAL.MessageContentSection[] | string) {
+    const Model = ChatCompletionModels[this.model_key];
+
+    if (
+      content instanceof Array &&
+      content.some((x) => x.type == "image_url") &&
+      !Model.IS_SUPPORT_IMAGE_CONTENT
+    ) {
+      throw new Error("The model does not support image content.");
+    }
+
     // Create a question message.
-    const questionMessage = this.append(Message.User(question));
+    const questionMessage = this.append(Message.User(content));
 
     // Create an assistant reply message.
     this.append(Message.Assistant());

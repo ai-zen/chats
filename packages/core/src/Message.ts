@@ -36,15 +36,6 @@ export class Message implements ChatAL.Message {
   }
 
   /**
-   * Returns string or JSON string for the content.
-   */
-  static stringifyContent(message: Message) {
-    return typeof message.content === "string"
-      ? message.content
-      : JSON.stringify(message.content);
-  }
-
-  /**
    * Rewrite the message. The original content will be stored in `raw_content`.
    */
   static rewrite(
@@ -80,7 +71,7 @@ export class Message implements ChatAL.Message {
   /**
    * Creates a user message.
    */
-  static User(content = "") {
+  static User(content: ChatAL.MessageContentSection[] | string) {
     return new Message({
       role: ChatAL.Role.User,
       content,

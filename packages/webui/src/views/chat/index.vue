@@ -80,9 +80,46 @@
                   @click="sessionSettingDialogState.visible = true"
                   ><el-icon> <Setting /> </el-icon
                 ></el-button>
-                <el-button size="small" title="上传图片"
-                  ><el-icon> <PictureRounded /> </el-icon
-                ></el-button>
+
+                <el-popover
+                  v-if="currentModelClass?.IS_SUPPORT_IMAGE_CONTENT"
+                  :visible="Boolean(sessionState.current.new_message_image)"
+                  placement="top"
+                  popper-style="padding: 6px; border-radius: 12px;"
+                >
+                  <div class="new-message-image-wrapper">
+                    <el-image
+                      class="new-message-image"
+                      :src="
+                        sessionState.current.new_message_image ||
+                        placeholderImage
+                      "
+                    ></el-image>
+                    <el-icon
+                      class="new-message-image-close"
+                      @click="onNewMessageImageClose"
+                      ><CircleClose
+                    /></el-icon>
+                  </div>
+                  <template #reference>
+                    <el-button
+                      size="small"
+                      title="上传图片"
+                      @click="onUploadImageClick"
+                      ><el-icon> <PictureRounded /> </el-icon
+                    ></el-button>
+                  </template>
+                </el-popover>
+                <el-tooltip
+                  v-else
+                  content="当前模型不支持上传图片"
+                  placement="top"
+                >
+                  <el-button size="small" title="上传图片" disabled
+                    ><el-icon> <PictureRounded /> </el-icon
+                  ></el-button>
+                </el-tooltip>
+
                 <el-button size="small" title="提问示例"
                   ><el-icon> <MagicStick /> </el-icon
                 ></el-button>
@@ -116,7 +153,7 @@
               <textarea
                 v-if="sessionState.current"
                 class="textarea"
-                v-model="sessionState.current.newMessage"
+                v-model="sessionState.current.new_message_content"
                 placeholder="请输入..."
               ></textarea>
             </div>
@@ -138,7 +175,7 @@
 
     <el-dialog title="场景配置" v-model="sessionSettingDialogState.visible">
       <el-form
-        v-if="sessionState.current && currentScene"
+        v-if="sessionState.current && currentSessionScene"
         :model="sessionState.current"
         ref="sessionSettingFormRef"
         label-position="top"
@@ -147,8 +184,8 @@
           prop="model_key"
           label="聊天模型"
           :rules="{
-            validator(_rule, value, callback) {
-              if (!(endpointsModelKeyMap as any)[value ?? (currentScene as any).model_key]?.length) {
+            validator(_rule, _value, callback) {
+              if (!(endpointsModelKeyMap as any)[currentModelKey as any]?.length) {
                 callback(new Error('请选择可用的聊天模型'));
               } else {
                 callback();
@@ -161,7 +198,7 @@
             style="width: 100%"
             clearable
             :placeholder="`使用场景默认模型 (${
-              Models[currentScene.model_key]?.title
+              Models[currentSessionScene.model_key]?.title
             })`"
           >
             <el-option
@@ -174,17 +211,27 @@
         </el-form-item>
       </el-form>
     </el-dialog>
+
+    <input
+      type="file"
+      ref="uploadFileRef"
+      accept="text"
+      style="display: none"
+      @change="onFileInputChange"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import {
   Chat,
+  ChatAL,
   ChatCompletionModels,
   Models,
   ModelsKeys,
 } from "@ai-zen/chats-core";
 import {
+  CircleClose,
   CloseBold,
   MagicStick,
   Microphone,
@@ -248,13 +295,10 @@ function initChat() {
   if (!sessionPO) return;
   const scenePO = getScene(sessionPO.scene_id);
   if (!scenePO) return;
-
-  const scene = formatScene(scenePO);
-
   chatRef.value = new Chat({
-    ...scene,
-    model_key: sessionPO.model_key || scene.model_key,
-    model_config: sessionPO.model_config || scene.model_config,
+    ...formatScene(scenePO),
+    model_key: sessionPO.model_key || scenePO.model_key,
+    model_config: sessionPO.model_config || scenePO.model_config,
     messages: sessionPO.messages,
     endpoints: endpointsInstances.value,
   });
@@ -269,8 +313,18 @@ watch(
   initChat
 );
 
-const currentScene = computed(() => {
+const currentSessionScene = computed(() => {
   return getScene(sessionState.current?.scene_id);
+});
+
+const currentModelKey = computed(() => {
+  return (
+    sessionState.current?.model_key || currentSessionScene.value?.model_key
+  );
+});
+
+const currentModelClass = computed(() => {
+  return ChatCompletionModels[currentModelKey.value!];
 });
 
 const isHasPendingMessage = computed(() => {
@@ -283,7 +337,7 @@ async function onSendClick() {
     return;
   }
 
-  if (!sessionState.current?.newMessage) {
+  if (!sessionState.current?.new_message_content) {
     ElMessage.error("请输入内容");
     return;
   }
@@ -297,9 +351,23 @@ async function onSendClick() {
   }
 
   // 发送，并将结果同步到会话，触发自动保存
-  const question = sessionState.current.newMessage;
-  sessionState.current.newMessage = "";
-  await chatRef.value.send(question);
+  const text = sessionState.current.new_message_content;
+  const image = sessionState.current.new_message_image;
+  sessionState.current.new_message_content = "";
+  sessionState.current.new_message_image = "";
+
+  // 生成消息内容
+  let content: ChatAL.MessageContentSection[] | string;
+  if (image) {
+    content = [
+      { type: "image_url", image_url: { url: image } },
+      { type: "text", text: text },
+    ];
+  } else {
+    content = text;
+  }
+
+  await chatRef.value.send(content);
 }
 
 /**
@@ -307,6 +375,32 @@ async function onSendClick() {
  */
 function onAbortClick() {
   chatRef.value?.abort();
+}
+
+const uploadFileRef = ref<null | HTMLInputElement>(null);
+let placeholderImage = ""; // 这个变量仅仅是为了防止清除图片时图片组件显示加载失败
+
+function onUploadImageClick() {
+  uploadFileRef.value?.click();
+}
+
+function onFileInputChange(event: any) {
+  if (!uploadFileRef.value) return;
+  if (!sessionState.current) return;
+  var file = event.target.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function (e: any) {
+    var base64Image = e.target.result;
+    sessionState.current!.new_message_image = base64Image;
+    placeholderImage = base64Image;
+  };
+  reader.readAsDataURL(file);
+  uploadFileRef.value.value = "";
+}
+
+function onNewMessageImageClose() {
+  sessionState.current!.new_message_image = "";
 }
 
 /**
@@ -646,6 +740,26 @@ onMounted(async () => {
     padding: 6px;
     font-size: 12px;
     color: var(--el-text-color-secondary);
+  }
+}
+
+.new-message-image-wrapper {
+  position: relative;
+  .new-message-image {
+    display: block;
+    border-radius: 6px;
+  }
+  .new-message-image-close {
+    position: absolute;
+    right: -12px;
+    top: -12px;
+    width: 24px;
+    height: 24px;
+    background-color: #fff;
+    border-radius: 50%;
+    color: var(--el-color-error);
+    font-size: 20px;
+    cursor: pointer;
   }
 }
 </style>

@@ -46,7 +46,8 @@ export namespace ChatPL {
     icon: string;
     scene_id: string;
     messages: ChatAL.Message[];
-    newMessage: string;
+    new_message_image: string;
+    new_message_content: string;
     model_key?: ChatCompletionModelsKeys;
     model_config?: any;
   }

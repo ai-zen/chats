@@ -67,7 +67,8 @@ export function useSession(options: {
       icon: clonedScene.icon,
       scene_id: clonedScene.id,
       messages: clonedScene.messages,
-      newMessage: "",
+      new_message_image: "",
+      new_message_content: "",
     };
   }
 

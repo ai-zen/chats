@@ -332,12 +332,12 @@ export abstract class ChatGPT<
 
   formatDelta(
     delta: ChatGPTTypes.ResponseDelta | undefined
-  ): ChatAL.Message | undefined {
+  ): ChatAL.Delta | undefined {
     if (!delta) return undefined;
     return {
       ...delta,
       content: this.formatContent(delta.content),
-      role: this.formatRole(delta.role),
+      role: delta.role && this.formatRole(delta.role),
     };
   }
 
@@ -355,7 +355,7 @@ export abstract class ChatGPT<
   formatContent(
     content: ChatGPTTypes.ResponseDelta["content"]
   ): ChatAL.Message["content"] {
-    return content ?? "";
+    return content;
   }
 
   formatFinalResponse(

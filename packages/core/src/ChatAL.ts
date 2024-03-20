@@ -61,10 +61,12 @@ export namespace ChatAL {
     | ImageUrlContentSection
     | TextContentSection;
 
+  export type MessageContent = string | MessageContentSection[];
+
   export interface Message {
     name?: string;
-    raw_content?: string | MessageContentSection[];
-    content?: string | MessageContentSection[];
+    raw_content?: MessageContent;
+    content?: MessageContent;
     function_call?: FunctionCall;
     tool_call_id?: number;
     tool_calls?: ToolCall[];
@@ -75,8 +77,21 @@ export namespace ChatAL {
     omit?: boolean;
   }
 
+  export interface Delta {
+    name?: string;
+    content?: MessageContent;
+    function_call?: FunctionCall;
+    tool_call_id?: number;
+    tool_calls?: ToolCall[];
+    role?: Role;
+    status?: MessageStatus;
+    finish_reason?: FinishReason;
+    hidden?: boolean;
+    omit?: boolean;
+  }
+
   export interface StreamChoice {
-    delta?: Message;
+    delta?: Delta;
     index: number;
     finish_reason: FinishReason | null;
     finish_details?: any;

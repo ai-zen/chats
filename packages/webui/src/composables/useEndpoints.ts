@@ -35,7 +35,7 @@ export function useEndpoint() {
       });
     });
 
-    console.log("map", map);
+    console.log("endpoints model key map", map);
 
     return map;
   });

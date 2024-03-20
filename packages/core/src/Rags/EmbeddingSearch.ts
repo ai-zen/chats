@@ -8,7 +8,10 @@ import { ChatAL } from "../ChatAL.js";
 
 export class EmbeddingSearch extends Rag {
   knowledge_bases: KnowledgeBase[];
-  template: (question: string, references: string[]) => string;
+  template: (
+    question: ChatAL.MessageContent,
+    references: string[]
+  ) => ChatAL.MessageContent;
   endpoints: Endpoint[];
 
   constructor(options: PickRequired<EmbeddingSearch, "knowledge_bases">) {
@@ -18,10 +21,22 @@ export class EmbeddingSearch extends Rag {
     this.endpoints = options.endpoints ?? [];
   }
 
-  private defaultTemplate(question: string, references: string[]): string {
-    return `My question is: \n\n${question}\n\nAnswer my question based on the following information: \n\n${references
-      .map((x, i) => `${i + 1}. ${x}`)
-      .join("\n")}`;
+  private defaultTemplate(
+    question: ChatAL.MessageContent,
+    references: string[]
+  ): ChatAL.MessageContent {
+    const formattedReference = references.map((ref) => `<${ref}>`).join(", ");
+    const partA = `My question is: \n\n`;
+    const partB = `\n\nAnswer my question based on the following information: \n\n${formattedReference}`;
+    if (question instanceof Array) {
+      return [
+        { type: "text", text: partA },
+        ...question,
+        { type: "text", text: partB },
+      ];
+    } else {
+      return `${partA}${question}${partB}`;
+    }
   }
 
   async rewrite(questionMessage: ChatAL.Message) {
@@ -29,7 +44,7 @@ export class EmbeddingSearch extends Rag {
     if (references?.length) {
       Message.rewrite(
         questionMessage,
-        this.template(Message.stringifyContent(questionMessage), references)
+        this.template(questionMessage.content!, references)
       );
     }
   }
