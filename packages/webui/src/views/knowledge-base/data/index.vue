@@ -7,9 +7,12 @@
       <el-button type="success" plain @click="addItem">
         <el-icon><DocumentAdd /></el-icon>&ensp; 新增条目</el-button
       >
-      <el-button type="primary" plain>
-        <el-icon><Files /></el-icon>&ensp; 批量导入
-      </el-button>
+      <rc-button type="primary" plain @click="importFile">
+        <rc-icon><Files /></rc-icon>&ensp; 导入文件
+      </rc-button>
+      <!-- <rc-button type="primary" plain>
+        <rc-icon><Files /></rc-icon>&ensp; 批量导入
+      </rc-button> -->
     </div>
 
     <div class="list" v-loading="detailState.isLoading">
@@ -48,6 +51,14 @@
     </div>
 
     <AddItemDialog @save="onAddItemDialogSave" ref="addItemDialogRef" />
+
+    <input
+      type="file"
+      ref="uploadFileRef"
+      accept="text"
+      style="display: none"
+      @change="onFileInputChange"
+    />
   </div>
 </template>
 
@@ -62,6 +73,7 @@ import { FormMode } from "../../../types/Common";
 import AddItemDialog from "./AddItemDialog.vue";
 
 const addItemDialogRef = ref<null | InstanceType<typeof AddItemDialog>>(null);
+const uploadFileRef = ref<null | HTMLInputElement>(null);
 
 const route = useRoute();
 
@@ -154,6 +166,41 @@ function onAddItemDialogSave(mode: FormMode, item: ChatPL.KnowledgeItemPO) {
       detailState.detail.data[index] = item;
     }
   }
+}
+
+function importFile() {
+  uploadFileRef.value?.click();
+}
+
+function onFileInputChange(event: any) {
+  if (!detailState.detail) return;
+
+  var selectedFile = event.target.files[0];
+
+  if (!selectedFile) return;
+
+  const maxSize = 24576; // 24KB
+
+  if (selectedFile && selectedFile.size > maxSize) {
+    ElMessage.error(`文件大小不能超过 ${maxSize / 1024}KB`);
+    uploadFileRef.value!.value = "";
+    return;
+  }
+
+  var reader = new FileReader();
+  reader.readAsText(selectedFile);
+  reader.onload = function () {
+    var fileContent = reader.result;
+
+    // 打开新增条目弹窗
+    addItemDialogRef.value?.add({
+      detail: detailState.detail!,
+      item: {
+        title: selectedFile.name,
+        text: fileContent as string,
+      },
+    });
+  };
 }
 
 onMounted(() => {

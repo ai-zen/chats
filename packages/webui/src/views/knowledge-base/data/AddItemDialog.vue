@@ -143,11 +143,17 @@ async function onDialogConfirm() {
   }
 }
 
-async function add(data: { detail: ChatPL.KnowledgeBasePO }) {
+async function add(data: {
+  detail: ChatPL.KnowledgeBasePO;
+  item?: Partial<ChatPL.KnowledgeItemPO>;
+}) {
   dialogState.isOpening = true;
   dialogState.mode = FormMode.Create;
   dialogState.detail = data.detail;
-  dialogState.form = createForm();
+  dialogState.form = Object.assign(
+    createForm(),
+    data.item ? structuredClone(toRaw(data.item)) : {}
+  );
   await initEndpointState();
   dialogState.isOpen = true;
   dialogState.isOpening = false;

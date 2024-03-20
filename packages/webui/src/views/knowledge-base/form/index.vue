@@ -6,6 +6,7 @@
     <el-form
       class="form"
       :model="formState.form"
+      v-loading="formState.isLoading"
       ref="formRef"
       label-width="120px"
     >
@@ -130,6 +131,7 @@ const formState = reactive({
 
 onMounted(async () => {
   try {
+    formState.isLoading = true;
     if (route.query.mode == FormMode.Create) {
       formState.form = createKnowledgeBase();
     } else if (
@@ -145,6 +147,8 @@ onMounted(async () => {
     }
   } catch (error: any) {
     ElMessage.error(`初始化表单失败：${error?.message}`);
+  } finally {
+    formState.isLoading = false;
   }
 });
 
