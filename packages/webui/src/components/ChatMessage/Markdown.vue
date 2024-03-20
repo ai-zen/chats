@@ -484,6 +484,9 @@ function onClick(e: MouseEvent) {
     max-width: 100%;
     box-sizing: content-box;
     background-color: var(--color-canvas-default);
+    border-radius: 6px;
+    display: block;
+    margin: 0.5em 0;
   }
 
   code,
