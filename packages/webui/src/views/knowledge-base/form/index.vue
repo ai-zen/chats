@@ -25,7 +25,11 @@
         label="图标"
         :rules="{ required: true, message: '请选择图标' }"
       >
-        <EmojiInput v-model="formState.form.icon"></EmojiInput>
+        <!-- <EmojiInput v-model="formState.form.icon"></EmojiInput> -->
+        <el-input
+          v-model="formState.form.icon"
+          placeholder="可以输入 emoji 或 图片url（http:// 或 https:// 开头）"
+        ></el-input>
       </el-form-item>
       <el-form-item
         prop="title"
@@ -88,7 +92,7 @@ import { ElForm, ElMessage } from "element-plus";
 import { computed, onMounted, reactive, ref } from "vue";
 import { useRoute } from "vue-router";
 import * as api from "../../../api";
-import EmojiInput from "../../../components/EmojiInput/index.vue";
+// import EmojiInput from "../../../components/EmojiInput/index.vue";
 import { MODELS_FORMS_MAP } from "../../../components/ModelsForms";
 import router from "../../../router";
 import { ChatPL } from "../../../types/ChatPL";

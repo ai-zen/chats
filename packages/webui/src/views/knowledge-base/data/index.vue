@@ -7,12 +7,12 @@
       <el-button type="success" plain @click="addItem">
         <el-icon><DocumentAdd /></el-icon>&ensp; 新增条目</el-button
       >
-      <rc-button type="primary" plain @click="importFile">
-        <rc-icon><Files /></rc-icon>&ensp; 导入文件
-      </rc-button>
-      <!-- <rc-button type="primary" plain>
-        <rc-icon><Files /></rc-icon>&ensp; 批量导入
-      </rc-button> -->
+      <el-button type="primary" plain @click="importFile">
+        <el-icon><Files /></el-icon>&ensp; 导入文件
+      </el-button>
+      <!-- <el-button type="primary" plain>
+        <el-icon><Files /></el-icon>&ensp; 批量导入
+      </el-button> -->
     </div>
 
     <div class="list" v-loading="detailState.isLoading">

@@ -290,7 +290,9 @@ export abstract class ChatGPT<
         tools: tools,
         tool_choice: "auto",
       };
-    } else {
+    } else if (
+      (this.constructor as typeof ChatCompletionModel).IS_SUPPORT_FUNCTION_CALL
+    ) {
       return {
         functions: tools.map((tool) => tool.function),
         function_call: "auto",

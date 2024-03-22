@@ -27,7 +27,7 @@
 
       <div class="card" v-for="(item, index) of listState.list" :key="index">
         <div class="title-row">
-          <div class="icon">{{ item.icon }}</div>
+          <AutoIcon class="icon" :icon="item.icon"></AutoIcon>
           <div class="title">{{ item.title }}</div>
           <div class="operation">
             <el-button
@@ -70,6 +70,7 @@ import { Plus, Edit, Delete, Search } from "@element-plus/icons-vue";
 import { useRouter } from "vue-router";
 import * as api from "../../../api";
 import { FormMode } from "../../../types/Common";
+import AutoIcon from "../../../components/AutoIcon/index.vue";
 
 const router = useRouter();
 

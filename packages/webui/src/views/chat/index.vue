@@ -13,7 +13,8 @@
               'is-current': sceneState.current?.id == scene.id,
             }"
           >
-            <EmojiInput disabled class="icon" v-model="scene.icon"></EmojiInput>
+            <!-- <EmojiInput disabled class="icon" v-model="scene.icon"></EmojiInput> -->
+            <AutoIcon class="icon" :icon="scene.icon"></AutoIcon>
             <div class="title">{{ scene.title }}</div>
             <div class="add" @click="addSessionByScene(scene)">
               <el-icon>
@@ -44,7 +45,7 @@
                 'is-current': sessionState.current?.id == session.id,
               }"
             >
-              <div class="icon">{{ session.icon }}</div>
+              <AutoIcon class="icon" :icon="session.icon"></AutoIcon>
               <div class="title">{{ session.title }}</div>
               <el-icon class="remove" @click.stop="removeSession(session.id)">
                 <CloseBold />
@@ -243,7 +244,7 @@ import {
 } from "@element-plus/icons-vue";
 import { ElForm, ElMessage, ElScrollbar } from "element-plus";
 import { computed, nextTick, onMounted, reactive, ref, watch } from "vue";
-import { ChatMessage, EmojiInput } from "../../components";
+import { AutoIcon, ChatMessage } from "../../components";
 import {
   useAgent,
   useEndpoint,
@@ -618,6 +619,14 @@ onMounted(async () => {
     }
 
     .icon {
+      width: 32px;
+      height: 32px;
+      font-size: 14px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
       pointer-events: none;
       border: none;
       background-color: var(--el-fill-color);
