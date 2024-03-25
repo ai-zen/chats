@@ -49,9 +49,9 @@
       >
         <el-select v-model="formState.form.endpoint_key">
           <el-option
-            v-for="Endpoint of Endpoints"
-            :value="Endpoint.name"
-            :label="Endpoint.title"
+            v-for="(endpoint, key) of Endpoints"
+            :value="key"
+            :label="endpoint.title"
           ></el-option>
           <!-- 如果要针对服务端标题做i18n可以拿key去做 -->
           <!-- TODO: 切换的时候还需要给默认值 -->
@@ -61,9 +61,9 @@
       <el-form-item prop="enabled_models_keys" label="启用的模型">
         <el-select v-model="formState.form.enabled_models_keys" multiple>
           <el-option
-            v-for="model of Models"
-            :key="model.name"
-            :value="model.name"
+            v-for="(model, key) of Models"
+            :key="key"
+            :value="key"
             :label="model.title"
           ></el-option>
         </el-select>
@@ -98,13 +98,12 @@
 </template>
 
 <script setup lang="ts">
-import { Models, ModelsKeys, Endpoints } from "@ai-zen/chats-core";
+import { Endpoints, Models, ModelsKeys } from "@ai-zen/chats-core";
 import { Check } from "@element-plus/icons-vue";
 import { ElForm, ElMessage } from "element-plus";
 import { computed, onMounted, reactive, ref } from "vue";
 import { useRoute } from "vue-router";
 import * as api from "../../../api";
-// import EmojiInput from "../../../components/EmojiInput/index.vue";
 import { ENDPOINTS_FORMS_MAP } from "../../../components/EndpointForms";
 import router from "../../../router";
 import { ChatPL } from "../../../types/ChatPL";

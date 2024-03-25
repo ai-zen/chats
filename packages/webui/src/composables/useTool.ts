@@ -35,6 +35,7 @@ export function useTool() {
   return {
     toolState,
     initToolState,
+    getList,
     getTool,
     getTools,
   };

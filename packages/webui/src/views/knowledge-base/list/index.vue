@@ -1,5 +1,5 @@
 <template>
-  <div class="knowledge-base-list-page">
+  <div class="list-page">
     <el-page-header content="知识库列表" @back="$router.back()">
       <template #extra>
         <el-button plain type="success" @click="create">
@@ -72,20 +72,20 @@
 </template>
 
 <script setup lang="ts">
+import {
+  Delete,
+  Edit,
+  FolderOpened,
+  Plus,
+  Search,
+} from "@element-plus/icons-vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { onMounted, reactive } from "vue";
-import { ChatPL } from "../../../types/ChatPL";
-import {
-  Plus,
-  Edit,
-  Delete,
-  Search,
-  FolderOpened,
-} from "@element-plus/icons-vue";
 import { useRouter } from "vue-router";
 import * as api from "../../../api";
-import { FormMode } from "../../../types/Common";
 import AutoIcon from "../../../components/AutoIcon/index.vue";
+import { ChatPL } from "../../../types/ChatPL";
+import { FormMode } from "../../../types/Common";
 
 const router = useRouter();
 
@@ -159,79 +159,3 @@ onMounted(() => {
   getList();
 });
 </script>
-
-<style lang="scss" scoped>
-.knowledge-base-list-page {
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
-  padding: 20px;
-}
-
-.empty {
-  flex-grow: 1;
-}
-
-.card-list {
-  padding: 10px;
-  margin: 0px -20px;
-  flex-grow: 1;
-  display: flex;
-  flex-wrap: wrap;
-  align-content: flex-start;
-}
-
-.card {
-  max-width: 360px;
-  height: max-content;
-  border-radius: 10px;
-  box-shadow: var(--el-box-shadow);
-  border: var(--el-border);
-  padding: 20px;
-  margin: 10px;
-  cursor: pointer;
-  &:hover {
-    color: var(--el-color-primary);
-    border-color: var(--el-color-primary);
-  }
-  .title-row {
-    display: flex;
-    align-items: center;
-    font-size: 14px;
-    .icon {
-      width: 32px;
-      height: 32px;
-      font-size: 14px;
-      background-color: var(--el-fill-color);
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-    }
-    .title {
-      margin-left: 1em;
-      flex-grow: 1;
-    }
-    .operation {
-      flex-shrink: 0;
-      margin-left: 1em;
-      display: flex;
-    }
-  }
-}
-
-.search-row {
-  margin-top: 20px;
-  justify-content: center;
-  .search-input:deep() {
-    width: 500px;
-    .el-input__wrapper {
-      border-radius: 19px;
-    }
-  }
-  .search-button {
-    margin-left: 1em;
-  }
-}
-</style>

@@ -5,7 +5,7 @@ import { debounce } from "../utils/debounce";
 import { uuid } from "../utils/uuid";
 
 export function useSession(options: {
-  getCurrentScene: () => ChatPL.ScenePO | undefined;
+  getDefaultScene: () => ChatPL.ScenePO | undefined;
 }) {
   const sessionState = reactive({
     list: [] as ChatPL.SessionPO[],
@@ -56,7 +56,7 @@ export function useSession(options: {
     return `${prefix}对话${maxKeyNumber + 1}`;
   }
 
-  function createSession(scene = options.getCurrentScene()) {
+  function createSession(scene = options.getDefaultScene()) {
     if (!scene) throw new Error("scene is required");
 
     const clonedScene = JSON.parse(JSON.stringify(scene));

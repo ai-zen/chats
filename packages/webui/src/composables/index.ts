@@ -4,3 +4,4 @@ export * from "./useKnowledgeBase";
 export * from "./useScene";
 export * from "./useSession";
 export * from "./useTool";
+export * from "./useDeserialize";

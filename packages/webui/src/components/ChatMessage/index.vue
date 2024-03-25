@@ -91,7 +91,8 @@ const isUseMarkdown = ref(true);
 const renderedContent = computed((): { output: string; html: boolean } => {
   const msg = props.message;
   const msg_content = msg.raw_content || msg.content;
-  const is_empty = !msg_content?.length && !msg.function_call;
+  const is_empty =
+    !msg_content?.length && !msg.function_call && !msg.tool_calls?.length;
 
   if (msg.status == ChatAL.MessageStatus.Pending && is_empty) {
     return { output: "思考中...", html: false };
@@ -122,7 +123,7 @@ const renderedContent = computed((): { output: string; html: boolean } => {
 
     if (msg.role == ChatAL.Role.Function || msg.role == ChatAL.Role.Tool) {
       output = `\`${msg.name}\`\n\n`;
-      output += `\n\`\`\`json\n${msg_content}\n\`\`\``;
+      output += `\n\`\`\`\`\`\`json\n${msg_content}\n\`\`\`\`\`\``;
     }
 
     if (msg.function_call) {
@@ -176,10 +177,6 @@ async function onCopyClick() {
   align-items: center;
   margin-bottom: 0.5rem;
 
-  // .message-sender {
-  //   font-weight: bold;
-  // }
-
   .message-time {
     font-size: 0.8rem;
   }
@@ -222,10 +219,6 @@ async function onCopyClick() {
 .my-message .message-body {
   flex-direction: row-reverse;
 }
-
-// .my-message .message-content {
-//   background-color: var(--el-color-primary);
-// }
 
 .message-append {
   display: flex;
@@ -274,18 +267,4 @@ async function onCopyClick() {
 .my-message .message-append .message-append-row {
   flex-direction: row-reverse;
 }
-
-// .message-footer {
-//   display: flex;
-//   opacity: 0;
-//   transition: 0.24s;
-// }
-
-// .chat-message:hover .message-footer {
-//   opacity: 1;
-// }
-
-// .my-message .message-footer {
-//   flex-direction: row-reverse;
-// }
 </style>

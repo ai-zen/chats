@@ -1,6 +1,6 @@
+import { ChatAL } from "@ai-zen/chats-core";
 import { reactive, watch } from "vue";
 import * as api from "../api";
-import { ChatCompletionModels, ChatAL } from "@ai-zen/chats-core";
 import { ChatPL } from "../types/ChatPL";
 import { debounce } from "../utils/debounce";
 
@@ -35,7 +35,7 @@ export function useScene() {
 
   function createDefaultScene() {
     return <ChatPL.ScenePO>{
-      model_key: ChatCompletionModels.GPT35Turbo_1106.name,
+      model_key: "GPT35Turbo16K_0631",
       agents_ids: [],
       icon: "🤖",
       id: "default",

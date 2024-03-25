@@ -102,8 +102,8 @@
       >
         <el-select v-model="formState.form.model_key">
           <el-option
-            v-for="model of ChatCompletionModels"
-            :value="model.name"
+            v-for="(model, key) of ChatCompletionModels"
+            :value="key"
             :label="model.title"
           ></el-option>
         </el-select>
@@ -204,7 +204,6 @@ import { ElForm, ElMessage } from "element-plus";
 import { computed, onMounted, reactive, ref } from "vue";
 import { useRoute } from "vue-router";
 import * as api from "../../../api";
-// import EmojiInput from "../../../components/EmojiInput/index.vue";
 import MessagesEditor from "../../../components/MessagesEditor/index.vue";
 import { MODELS_FORMS_MAP } from "../../../components/ModelsForms";
 import ParametersEditor from "../../../components/ParametersEditor/index.vue";
@@ -248,7 +247,7 @@ function createAgent() {
         status: ChatAL.MessageStatus.Completed,
       },
     ],
-    model_key: ChatCompletionModels.GPT35Turbo_1106.name,
+    model_key: "GPT35Turbo16K_0631",
     model_config: {},
     title: "",
     tools_ids: [],

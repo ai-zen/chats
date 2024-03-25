@@ -40,16 +40,6 @@ export function useEndpoint() {
     return map;
   });
 
-  const endpointsInstances = computed(() => {
-    return endpointState.list.map(
-      (x) =>
-        new Endpoints[x.endpoint_key]({
-          enabled_models_keys: x.enabled_models_keys,
-          ...x.endpoint_config,
-        })
-    );
-  });
-
   function matchEndpointInstance(model_key: ModelsKeys) {
     const x = endpointState.list.find((x) =>
       x.enabled_models_keys.includes(model_key)
@@ -67,7 +57,6 @@ export function useEndpoint() {
     endpointState,
     endpointsModelKeyMap,
     initEndpointState,
-    endpointsInstances,
     matchEndpointInstance,
   };
 }

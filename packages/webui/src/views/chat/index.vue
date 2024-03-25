@@ -13,12 +13,11 @@
               'is-current': sceneState.current?.id == scene.id,
             }"
           >
-            <!-- <EmojiInput disabled class="icon" v-model="scene.icon"></EmojiInput> -->
             <AutoIcon class="icon" :icon="scene.icon"></AutoIcon>
             <div class="title">{{ scene.title }}</div>
             <div class="add" @click="addSessionByScene(scene)">
               <el-icon>
-                <Plus></Plus>
+                <Plus />
               </el-icon>
             </div>
           </div>
@@ -63,10 +62,7 @@
         <template v-if="sessionState.current">
           <el-scrollbar class="scroll-y" ref="scrollBarRef">
             <div class="messages">
-              <template
-                v-for="(message, _index) of sessionState.current.messages"
-                :key="_index"
-              >
+              <template v-for="message of sessionState.current.messages">
                 <ChatMessage v-if="!message.hidden" :message="message" />
               </template>
             </div>
@@ -78,67 +74,66 @@
                 <el-button
                   size="small"
                   title="设置"
-                  @click="sessionSettingDialogState.visible = true"
-                  ><el-icon> <Setting /> </el-icon
-                ></el-button>
+                  @click="settingDialogRef?.open()"
+                  :icon="Setting"
+                />
 
-                <el-popover
+                <ImagePicker
                   v-if="currentModelClass?.IS_SUPPORT_IMAGE_CONTENT"
-                  :visible="Boolean(sessionState.current.new_message_image)"
-                  placement="top"
-                  popper-style="padding: 6px; border-radius: 12px;"
+                  v-model="sessionState.current.new_message_image"
                 >
-                  <div class="new-message-image-wrapper">
-                    <el-image
-                      class="new-message-image"
-                      :src="
-                        sessionState.current.new_message_image ||
-                        placeholderImage
-                      "
-                    ></el-image>
-                    <el-icon
-                      class="new-message-image-close"
-                      @click="onNewMessageImageClose"
-                      ><CircleClose
-                    /></el-icon>
-                  </div>
-                  <template #reference>
+                  <template #default="{ open }">
                     <el-button
                       size="small"
                       title="上传图片"
-                      @click="onUploadImageClick"
-                      ><el-icon> <PictureRounded /> </el-icon
-                    ></el-button>
+                      @click="open"
+                      :icon="PictureRounded"
+                    />
                   </template>
-                </el-popover>
+                </ImagePicker>
+
                 <el-tooltip
                   v-else
                   content="当前模型不支持上传图片"
                   placement="top"
                 >
-                  <el-button size="small" title="上传图片" disabled
-                    ><el-icon> <PictureRounded /> </el-icon
-                  ></el-button>
+                  <el-button
+                    size="small"
+                    title="上传图片"
+                    disabled
+                    :icon="PictureRounded"
+                  />
                 </el-tooltip>
 
-                <el-button size="small" title="提问示例"
-                  ><el-icon> <MagicStick /> </el-icon
-                ></el-button>
-                <el-button size="small" title="emoji">😀</el-button>
+                <el-button size="small" title="提问示例" :icon="MagicStick" />
+
+                <EmojiPicker
+                  @output="
+                    sessionState.current.new_message_content =
+                      insertTextAtCursor(inputRef!, $event)
+                  "
+                >
+                  <el-button size="small" title="emoji">😀</el-button>
+                </EmojiPicker>
               </div>
 
               <!-- Resize Bar -->
+
               <div class="right">
-                <el-button size="small" plain title="语音输入"
-                  ><el-icon> <Microphone /> </el-icon
-                ></el-button>
+                <el-button
+                  size="small"
+                  plain
+                  title="语音输入"
+                  :icon="Microphone"
+                />
                 <el-button
                   type="primary"
                   plain
                   title="发送"
                   @click="onSendClick"
                   :disabled="isHasPendingMessage"
-                  ><el-icon> <Promotion /> </el-icon>&ensp;发送</el-button
+                  :icon="Promotion"
+                  >发送</el-button
                 >
                 <el-button
                   type="danger"
@@ -146,20 +141,24 @@
                   title="停止"
                   @click="onAbortClick"
                   :disabled="!isHasPendingMessage"
-                  ><el-icon> <VideoPause /> </el-icon>&ensp;停止</el-button
+                  :icon="VideoPause"
+                  >停止</el-button
                 >
               </div>
             </div>
+
             <div class="input-row">
               <textarea
                 v-if="sessionState.current"
                 class="textarea"
                 v-model="sessionState.current.new_message_content"
                 placeholder="请输入..."
+                ref="inputRef"
               ></textarea>
             </div>
           </div>
         </template>
+
         <template v-else>
           <el-empty
             description="请从左侧新增对话以进行对话。"
@@ -169,70 +168,19 @@
       </div>
     </div>
 
-    <!-- 右侧边栏，待定 -->
-    <div class="right-side-bar">
-      <!-- Scene List -->
-    </div>
-
-    <el-dialog title="场景配置" v-model="sessionSettingDialogState.visible">
-      <el-form
-        v-if="sessionState.current && currentSessionScene"
-        :model="sessionState.current"
-        ref="sessionSettingFormRef"
-        label-position="top"
-      >
-        <el-form-item
-          prop="model_key"
-          label="聊天模型"
-          :rules="{
-            validator(_rule, _value, callback) {
-              if (!(endpointsModelKeyMap as any)[currentModelKey as any]?.length) {
-                callback(new Error('请选择可用的聊天模型'));
-              } else {
-                callback();
-              }
-            },
-          }"
-        >
-          <el-select
-            v-model="sessionState.current.model_key"
-            style="width: 100%"
-            clearable
-            :placeholder="`使用场景默认模型 (${
-              Models[currentSessionScene.model_key]?.title
-            })`"
-          >
-            <el-option
-              v-for="Model of ChatCompletionModels"
-              :label="`${Model.title} (${endpointsModelKeyMap[Model.name as ModelsKeys]?.length || 0})`"
-              :value="Model.name"
-              :disabled="!endpointsModelKeyMap[Model.name as ModelsKeys]?.length"
-            ></el-option>
-          </el-select>
-        </el-form-item>
-      </el-form>
-    </el-dialog>
-
-    <input
-      type="file"
-      ref="uploadFileRef"
-      accept="text"
-      style="display: none"
-      @change="onFileInputChange"
+    <SettingDialog
+      :endpointsModelKeyMap="endpointsModelKeyMap"
+      :currentSession="sessionState.current"
+      :currentSessionScene="currentSessionScene"
+      :currentModelKey="currentModelKey"
+      ref="settingDialogRef"
     />
   </div>
 </template>
 
 <script setup lang="ts">
+import { ChatAL, ChatCompletionModels } from "@ai-zen/chats-core";
 import {
-  Chat,
-  ChatAL,
-  ChatCompletionModels,
-  Models,
-  ModelsKeys,
-} from "@ai-zen/chats-core";
-import {
-  CircleClose,
   CloseBold,
   MagicStick,
   Microphone,
@@ -242,9 +190,9 @@ import {
   Setting,
   VideoPause,
 } from "@element-plus/icons-vue";
-import { ElForm, ElMessage, ElScrollbar } from "element-plus";
-import { computed, nextTick, onMounted, reactive, ref, watch } from "vue";
-import { AutoIcon, ChatMessage } from "../../components";
+import { ElMessage, ElScrollbar } from "element-plus";
+import { computed, onMounted, ref } from "vue";
+import { AutoIcon, ChatMessage, EmojiPicker } from "../../components";
 import {
   useAgent,
   useEndpoint,
@@ -253,14 +201,18 @@ import {
   useSession,
   useTool,
 } from "../../composables";
-import { useDeserialize } from "../../composables/useDeserialize";
 import { ChatPL } from "../../types/ChatPL";
-import { debounce } from "../../utils/debounce";
-import { nextFrame } from "../../utils/sleep";
+import { insertTextAtCursor } from "../../utils";
+import ImagePicker from "./ImagePicker.vue";
+import SettingDialog from "./SettingDialog.vue";
+import { useAutoScroll } from "./useAutoScroll";
+import { useChat } from "./useChat";
 
 const scrollBarRef = ref<InstanceType<typeof ElScrollbar> | undefined>();
+const inputRef = ref<HTMLTextAreaElement | undefined>();
+const settingDialogRef = ref<InstanceType<typeof SettingDialog> | undefined>();
 
-const { endpointsModelKeyMap, endpointsInstances, initEndpointState } =
+const { endpointState, endpointsModelKeyMap, initEndpointState } =
   useEndpoint();
 
 const { sceneState, getScene, initSceneState } = useScene();
@@ -271,12 +223,6 @@ const { initToolState, getTools } = useTool();
 
 const { initAgentState, getAgents } = useAgent();
 
-const { formatScene } = useDeserialize({
-  getAgents,
-  getKnowledgeBases,
-  getTools,
-});
-
 const {
   sessionState,
   createSession,
@@ -284,35 +230,10 @@ const {
   removeSession,
   initSessionState,
 } = useSession({
-  getCurrentScene() {
+  getDefaultScene() {
     return sceneState.current ?? undefined;
   },
 });
-
-const chatRef = ref<Chat>();
-
-function initChat() {
-  const sessionPO = sessionState.current;
-  if (!sessionPO) return;
-  const scenePO = getScene(sessionPO.scene_id);
-  if (!scenePO) return;
-  chatRef.value = new Chat({
-    ...formatScene(scenePO),
-    model_key: sessionPO.model_key || scenePO.model_key,
-    model_config: sessionPO.model_config || scenePO.model_config,
-    messages: sessionPO.messages,
-    endpoints: endpointsInstances.value,
-  });
-}
-
-watch(
-  [
-    () => sessionState.current,
-    () => sessionState.current?.model_key,
-    () => sessionState.current?.model_config,
-  ],
-  initChat
-);
 
 const currentSessionScene = computed(() => {
   return getScene(sessionState.current?.scene_id);
@@ -328,8 +249,18 @@ const currentModelClass = computed(() => {
   return ChatCompletionModels[currentModelKey.value!];
 });
 
-const isHasPendingMessage = computed(() => {
-  return chatRef.value?.isHasPendingMessage;
+const { chatRef, isHasPendingMessage } = useChat({
+  getCurrentSession: () => sessionState.current,
+  getCurrentSessionScene: () => currentSessionScene.value,
+  getEndpoints: () => endpointState.list,
+  getAgents,
+  getKnowledgeBases,
+  getTools,
+});
+
+useAutoScroll({
+  getScrollEl: () => scrollBarRef.value?.wrapRef,
+  getMessages: () => sessionState.current?.messages,
 });
 
 async function onSendClick() {
@@ -344,10 +275,10 @@ async function onSendClick() {
   }
 
   try {
-    await sessionSettingFormRef.value?.validate();
+    await settingDialogRef.value?.validate();
   } catch (error) {
     ElMessage.error("请选择一个有效的服务端");
-    sessionSettingDialogState.visible = true;
+    settingDialogRef.value?.open();
     return;
   }
 
@@ -376,32 +307,6 @@ async function onSendClick() {
  */
 function onAbortClick() {
   chatRef.value?.abort();
-}
-
-const uploadFileRef = ref<null | HTMLInputElement>(null);
-let placeholderImage = ""; // 这个变量仅仅是为了防止清除图片时图片组件显示加载失败
-
-function onUploadImageClick() {
-  uploadFileRef.value?.click();
-}
-
-function onFileInputChange(event: any) {
-  if (!uploadFileRef.value) return;
-  if (!sessionState.current) return;
-  var file = event.target.files[0];
-  if (!file) return;
-  var reader = new FileReader();
-  reader.onload = function (e: any) {
-    var base64Image = e.target.result;
-    sessionState.current!.new_message_image = base64Image;
-    placeholderImage = base64Image;
-  };
-  reader.readAsDataURL(file);
-  uploadFileRef.value.value = "";
-}
-
-function onNewMessageImageClose() {
-  sessionState.current!.new_message_image = "";
 }
 
 /**
@@ -442,43 +347,7 @@ function onSessionTabClick(session: ChatPL.SessionPO) {
   sceneState.current = getScene(session.scene_id) ?? null;
 }
 
-// 滚动到底部（带防抖）
-const scrollToBottomWithDebounce = debounce(async () => {
-  await nextTick();
-  await nextFrame();
-
-  const scrollBarEl = scrollBarRef.value?.wrapRef;
-  if (!scrollBarEl) return;
-
-  scrollBarEl.scrollTo({ behavior: "smooth", top: scrollBarEl.scrollHeight });
-}, 100);
-
-// 任意消息内容变化触发滚动
-watch(
-  () => sessionState.current?.messages,
-  () => {
-    const scrollBarEl = scrollBarRef.value?.wrapRef;
-    if (!scrollBarEl) return;
-
-    // 判断渲染前是否处于底部，如果处于底部那么就在下一次渲染后滚动到底部
-    if (
-      scrollBarEl.scrollTop >=
-      scrollBarEl.scrollHeight - scrollBarEl.clientHeight - 200
-    ) {
-      scrollToBottomWithDebounce();
-    }
-  },
-  { deep: true }
-);
-
-const sessionSettingFormRef = ref<InstanceType<typeof ElForm> | null>(null);
-
-const sessionSettingDialogState = reactive({
-  visible: true, // 提前渲染会话表单
-});
-
 onMounted(async () => {
-  sessionSettingDialogState.visible = false;
   await Promise.all([
     initEndpointState(),
     initSceneState(),
@@ -749,26 +618,6 @@ onMounted(async () => {
     padding: 6px;
     font-size: 12px;
     color: var(--el-text-color-secondary);
-  }
-}
-
-.new-message-image-wrapper {
-  position: relative;
-  .new-message-image {
-    display: block;
-    border-radius: 6px;
-  }
-  .new-message-image-close {
-    position: absolute;
-    right: -12px;
-    top: -12px;
-    width: 24px;
-    height: 24px;
-    background-color: #fff;
-    border-radius: 50%;
-    color: var(--el-color-error);
-    font-size: 20px;
-    cursor: pointer;
   }
 }
 </style>

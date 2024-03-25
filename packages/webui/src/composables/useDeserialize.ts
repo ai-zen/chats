@@ -1,23 +1,32 @@
 import {
-  Tool,
-  CodeTool,
-  CallbackTool,
-  KnowledgeBase,
-  ChatContext,
-  Message,
-  EmbeddingSearch,
-  IndexedSearchTool,
   AgentTool,
+  CallbackTool,
+  ChatContext,
+  CodeTool,
+  EmbeddingSearch,
+  Endpoints,
+  IndexedSearchTool,
+  KnowledgeBase,
+  Message,
   Scene,
+  Tool,
 } from "@ai-zen/chats-core";
 import { Rag } from "@ai-zen/chats-core/dist/Rag";
 import { ChatPL } from "../types/ChatPL";
 
 export function useDeserialize(options: {
+  getEndpoints(): ChatPL.EndpointPO[];
   getTools(ids: string[]): ChatPL.ToolPO[];
   getAgents(ids: string[]): ChatPL.AgentPO[];
   getKnowledgeBases(ids: string[]): ChatPL.KnowledgeBasePO[];
 }) {
+  function formatEndpoint(endpointPO: ChatPL.EndpointPO) {
+    return new Endpoints[endpointPO.endpoint_key]({
+      enabled_models_keys: endpointPO.enabled_models_keys,
+      ...endpointPO.endpoint_config,
+    });
+  }
+
   function formatTool(toolPO: ChatPL.ToolPO): Tool {
     if (toolPO.code) {
       return new CodeTool(toolPO as Required<ChatPL.ToolPO>);
@@ -60,11 +69,14 @@ export function useDeserialize(options: {
       tools.push(new IndexedSearchTool({ entries }));
     }
 
+    const endpoints = options.getEndpoints().map(formatEndpoint);
+
     return new ChatContext({
       ...chatContextPO,
       messages,
       tools,
       rag,
+      endpoints,
     });
   }
 

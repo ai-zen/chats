@@ -51,8 +51,8 @@
           :disabled="route.query.mode == FormMode.Edit"
         >
           <el-option
-            v-for="model of EmbeddingModels"
-            :value="model.name"
+            v-for="(model, key) of EmbeddingModels"
+            :value="key"
             :label="model.title"
           ></el-option>
         </el-select>
@@ -92,7 +92,6 @@ import { ElForm, ElMessage } from "element-plus";
 import { computed, onMounted, reactive, ref } from "vue";
 import { useRoute } from "vue-router";
 import * as api from "../../../api";
-// import EmojiInput from "../../../components/EmojiInput/index.vue";
 import { MODELS_FORMS_MAP } from "../../../components/ModelsForms";
 import router from "../../../router";
 import { ChatPL } from "../../../types/ChatPL";
@@ -121,7 +120,7 @@ function createKnowledgeBase() {
     id: uuid(),
     title: "",
     icon: "📚",
-    model_key: EmbeddingModels.TextEmbeddingAda002_2.name,
+    model_key: "TextEmbeddingAda002_2",
     model_config: {},
     data: [],
   };
