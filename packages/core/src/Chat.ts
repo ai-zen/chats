@@ -28,7 +28,7 @@ export class Chat extends ChatContext {
   /**
    * An array to record pending tasks, used to abort.
    */
-  private pendingTasks: PendingTask[] = [];
+  private pendingTasks: Set<PendingTask> = new Set();
 
   /**
    * Abort all pending tasks.
@@ -69,7 +69,9 @@ export class Chat extends ChatContext {
 
     const controller = new AbortController();
 
-    this.pendingTasks.push({ controller, receiver });
+    const pendingTask: PendingTask = { controller, receiver };
+
+    this.pendingTasks.add(pendingTask);
 
     const stream = model.createStream({
       signal: controller.signal,
@@ -114,6 +116,8 @@ export class Chat extends ChatContext {
         this.events.emit("error", error);
       }
     }
+
+    this.pendingTasks.delete(pendingTask);
 
     return this.messages;
   }
