@@ -73,6 +73,8 @@ export class Chat extends ChatContext {
 
     this.pendingTasks.add(pendingTask);
 
+    this.events.emit("run");
+
     const stream = model.createStream({
       signal: controller.signal,
       messages: this.formatHistory(),
