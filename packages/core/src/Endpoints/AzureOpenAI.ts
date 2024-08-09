@@ -15,6 +15,8 @@ export class AzureOpenAI extends Endpoint<AzureOpenAIConfig> {
   static title = "Azure OpenAI";
 
   static COMPATIBLE_MODELS_KEYS: ModelsKeys[] = [
+    "GPT4O_20240513",
+    "GPT4O_20240806",
     "GPT4_0125Preview",
     "GPT4_1106Preview",
     "GPT4_VisionPreview",

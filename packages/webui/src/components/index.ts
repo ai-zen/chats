@@ -9,3 +9,4 @@ export { default as JsonEditor } from "./JsonEditor/index.vue";
 export { default as MessagesEditor } from "./MessagesEditor/index.vue";
 export { default as ParametersEditor } from "./ParametersEditor/index.vue";
 export { default as TagsEditor } from "./TagsEditor/index.vue";
+export { default as Resize } from "./Resize/index.vue";

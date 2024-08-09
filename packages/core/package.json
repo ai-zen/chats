@@ -1,6 +1,6 @@
 {
   "name": "@ai-zen/chats-core",
-  "version": "1.0.20",
+  "version": "1.0.21",
   "description": "",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -21,8 +21,8 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
-    "@ai-zen/async-queue": "^1.0.2",
-    "@ai-zen/event-bus": "^1.0.1",
+    "@ai-zen/async-queue": "^1.2.2",
+    "@ai-zen/event-bus": "^1.1.0",
     "@ai-zen/node-fetch-event-source": "^2.1.4",
     "jose": "^5"
   }

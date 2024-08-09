@@ -68,95 +68,97 @@
             </div>
           </el-scrollbar>
 
-          <div class="chat-input-panel">
-            <div class="toolbar-row">
-              <div class="left">
-                <el-button
-                  size="small"
-                  title="设置"
-                  @click="settingDialogRef?.open()"
-                  :icon="Setting"
-                />
+          <Resize :placements="['top']" width="100%" height="300px">
+            <div class="chat-input-panel">
+              <div class="toolbar-row">
+                <div class="left">
+                  <el-button
+                    size="small"
+                    title="设置"
+                    @click="settingDialogRef?.open()"
+                    :icon="Setting"
+                  />
 
-                <ImagePicker
-                  v-if="currentModelClass?.IS_SUPPORT_IMAGE_CONTENT"
-                  v-model="sessionState.current.new_message_image"
-                >
-                  <template #default="{ open }">
+                  <ImagePicker
+                    v-if="currentModelClass?.IS_SUPPORT_IMAGE_CONTENT"
+                    v-model="sessionState.current.new_message_image"
+                  >
+                    <template #default="{ open }">
+                      <el-button
+                        size="small"
+                        title="上传图片"
+                        @click="open"
+                        :icon="PictureRounded"
+                      />
+                    </template>
+                  </ImagePicker>
+
+                  <el-tooltip
+                    v-else
+                    content="当前模型不支持上传图片"
+                    placement="top"
+                  >
                     <el-button
                       size="small"
                       title="上传图片"
-                      @click="open"
+                      disabled
                       :icon="PictureRounded"
                     />
-                  </template>
-                </ImagePicker>
+                  </el-tooltip>
 
-                <el-tooltip
-                  v-else
-                  content="当前模型不支持上传图片"
-                  placement="top"
-                >
+                  <el-button size="small" title="提问示例" :icon="MagicStick" />
+
+                  <EmojiPicker
+                    @output="
+                      sessionState.current.new_message_content =
+                        insertTextAtCursor(inputRef!, $event)
+                    "
+                  >
+                    <el-button size="small" title="emoji">😀</el-button>
+                  </EmojiPicker>
+                </div>
+
+                <!-- Resize Bar -->
+
+                <div class="right">
                   <el-button
                     size="small"
-                    title="上传图片"
-                    disabled
-                    :icon="PictureRounded"
+                    plain
+                    title="语音输入"
+                    :icon="Microphone"
                   />
-                </el-tooltip>
-
-                <el-button size="small" title="提问示例" :icon="MagicStick" />
-
-                <EmojiPicker
-                  @output="
-                    sessionState.current.new_message_content =
-                      insertTextAtCursor(inputRef!, $event)
-                  "
-                >
-                  <el-button size="small" title="emoji">😀</el-button>
-                </EmojiPicker>
+                  <el-button
+                    type="primary"
+                    plain
+                    title="发送"
+                    @click="onSendClick"
+                    :disabled="isHasPendingMessage"
+                    :icon="Promotion"
+                    >发送</el-button
+                  >
+                  <el-button
+                    type="danger"
+                    plain
+                    title="停止"
+                    @click="onAbortClick"
+                    :disabled="!isHasPendingMessage"
+                    :icon="VideoPause"
+                    >停止</el-button
+                  >
+                </div>
               </div>
 
-              <!-- Resize Bar -->
-
-              <div class="right">
-                <el-button
-                  size="small"
-                  plain
-                  title="语音输入"
-                  :icon="Microphone"
-                />
-                <el-button
-                  type="primary"
-                  plain
-                  title="发送"
-                  @click="onSendClick"
-                  :disabled="isHasPendingMessage"
-                  :icon="Promotion"
-                  >发送</el-button
-                >
-                <el-button
-                  type="danger"
-                  plain
-                  title="停止"
-                  @click="onAbortClick"
-                  :disabled="!isHasPendingMessage"
-                  :icon="VideoPause"
-                  >停止</el-button
-                >
+              <div class="input-row">
+                <textarea
+                  v-if="sessionState.current"
+                  class="textarea"
+                  v-model="sessionState.current.new_message_content"
+                  placeholder="请输入..."
+                  ref="inputRef"
+                ></textarea>
               </div>
             </div>
-
-            <div class="input-row">
-              <textarea
-                v-if="sessionState.current"
-                class="textarea"
-                v-model="sessionState.current.new_message_content"
-                placeholder="请输入..."
-                ref="inputRef"
-              ></textarea>
-            </div>
-          </div>
+          </Resize>
         </template>
 
         <template v-else>
@@ -192,7 +194,7 @@ import {
 } from "@element-plus/icons-vue";
 import { ElMessage, ElScrollbar } from "element-plus";
 import { computed, onMounted, ref } from "vue";
-import { AutoIcon, ChatMessage, EmojiPicker } from "../../components";
+import { AutoIcon, ChatMessage, EmojiPicker, Resize } from "../../components";
 import {
   useAgent,
   useEndpoint,
@@ -405,6 +407,8 @@ onMounted(async () => {
 }
 
 .chat-input-panel {
+  height: 100%;
+  width: 100%;
   display: flex;
   flex-direction: column;
   background-color: var(--el-bg-color);
@@ -432,13 +436,15 @@ onMounted(async () => {
 .input-row {
   display: flex;
   margin: 0 6px 6px;
+  height: 0px;
+  flex-grow: 1;
 }
 
 .textarea {
+  width: 100%;
+  height: 100%;
   display: block;
   box-sizing: border-box;
-  width: 100%;
-  height: 100px;
   background-color: var(--el-input-bg-color, var(--el-fill-color-blank));
   border-radius: var(--el-input-border-radius, var(--el-border-radius-base));
   box-shadow: 0 0 0 1px var(--el-input-border-color, var(--el-border-color))

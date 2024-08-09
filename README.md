@@ -60,6 +60,5 @@ This project is licensed under the MIT License. See the [LICENSE.md](LICENSE.md)
 
 ## To Do Items
 
-[ ] List keyword  
 [ ] i18n  
 [ ] STT input

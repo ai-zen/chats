@@ -1,5 +1,9 @@
 lockfileVersion: '6.0'
 
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
 importers:
 
   .: {}
@@ -7,11 +11,11 @@ importers:
   packages/core:
     dependencies:
       '@ai-zen/async-queue':
-        specifier: ^1.0.2
-        version: 1.0.2
+        specifier: ^1.2.2
+        version: 1.2.2
       '@ai-zen/event-bus':
-        specifier: ^1.0.1
-        version: 1.0.1
+        specifier: ^1.1.0
+        version: 1.1.0
       '@ai-zen/node-fetch-event-source':
         specifier: ^2.1.4
         version: 2.1.4
@@ -32,14 +36,14 @@ importers:
   packages/webui:
     dependencies:
       '@ai-zen/async-queue':
-        specifier: ^1.0.2
-        version: 1.0.2
+        specifier: ^1.2.2
+        version: 1.2.2
       '@ai-zen/chats-core':
         specifier: workspace:^
         version: link:../core
       '@ai-zen/event-bus':
-        specifier: ^1.0.1
-        version: 1.0.1
+        specifier: ^1.1.0
+        version: 1.1.0
       '@element-plus/icons-vue':
         specifier: ^2.3.1
         version: 2.3.1(vue@3.3.11)
@@ -89,12 +93,12 @@ importers:
 
 packages:
 
-  /@ai-zen/async-queue@1.0.2:
-    resolution: {integrity: sha512-i316ZK5dSbtqgfNhI9ZOg/chi3jBq1xyn4Lr/QIjCWYlK58bDRhotvA91kwiVNt4Vmh7eQLxf/aArpWTMz244g==}
+  /@ai-zen/async-queue@1.2.2:
+    resolution: {integrity: sha512-cK64xuLufO0/6pS/ylZha8uSVpn0zVBgtYSIT4kFHujmbPymQRTm2y5rJnQfhtuci62F5nSf0gFHJ3bmxiLE+Q==}
     dev: false
 
-  /@ai-zen/event-bus@1.0.1:
-    resolution: {integrity: sha512-toCOVAMFKR5e5pavc6fG/7HrBJmcSovFq+pAtzjc8gIK9/1rKRGz9sDG1CJtEWC7fLaR0AHAfBCH5zz7zQIROA==}
+  /@ai-zen/event-bus@1.1.0:
+    resolution: {integrity: sha512-xjfQEmUMly++dOSrQMJkwrnBVl7bQHtiw8S09AW5jPuqnFV9OwBk0PsGFc/T+4eP4yWThBJo2X3cCdE5DkAr+Q==}
     dev: false
 
   /@ai-zen/node-fetch-event-source@2.1.4:

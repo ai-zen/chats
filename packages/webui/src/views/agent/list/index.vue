@@ -11,6 +11,8 @@
     <el-row class="search-row">
       <el-input
         class="search-input"
+        clearable
+        v-model="filterState.form.keyword"
         size="large"
         placeholder="输入关键字搜索..."
         :prefix-icon="Search"
@@ -21,11 +23,11 @@
     </el-row>
 
     <div class="card-list" v-loading="listState.isLoading">
-      <div v-if="!listState.list?.length && !listState.isLoading" class="empty">
+      <div v-if="!filterList?.length && !listState.isLoading" class="empty">
         <el-empty></el-empty>
       </div>
 
-      <div class="card" v-for="(item, index) of listState.list" :key="index">
+      <div class="card" v-for="(item, index) of filterList" :key="index">
         <div class="title-row">
           <AutoIcon class="icon" :icon="item.icon"></AutoIcon>
           <div class="title">{{ item.title }}</div>
@@ -65,7 +67,7 @@
 <script setup lang="ts">
 import { Delete, Edit, Plus, Search } from "@element-plus/icons-vue";
 import { ElMessage, ElMessageBox } from "element-plus";
-import { onMounted, reactive } from "vue";
+import { computed, onMounted, reactive } from "vue";
 import { useRouter } from "vue-router";
 import * as api from "../../../api";
 import AutoIcon from "../../../components/AutoIcon/index.vue";
@@ -73,6 +75,16 @@ import { ChatPL } from "../../../types/ChatPL";
 import { FormMode } from "../../../types/Common";
 
 const router = useRouter();
+
+const filterState = reactive({
+  form: {
+    keyword: "",
+  },
+});
+
+const filterList = computed(() =>
+  listState.list.filter((item) => item.title.includes(filterState.form.keyword))
+);
 
 const listState = reactive({
   list: [] as ChatPL.AgentPO[],
