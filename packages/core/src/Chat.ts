@@ -46,7 +46,7 @@ export class Chat extends ChatContext {
   async run() {
     const modelKey = this.model_key;
     if (!modelKey) {
-      throw new Error("Model key not found");
+      throw new Error("The Model Key cannot be empty");
     }
 
     const endpoint = Endpoint.match(this.endpoints, modelKey);
@@ -64,7 +64,10 @@ export class Chat extends ChatContext {
 
     const receiver = this.messages.at(-1) as Message;
     if (!receiver) {
-      throw new Error("No pending message found");
+      throw new Error("You need to send at least one message as a receive message");
+    }
+    if (receiver.role !== ChatAL.Role.Assistant) {
+      throw new Error("The last message will serve as the receiving message, and its role can only be assistant.");
     }
 
     const controller = new AbortController();

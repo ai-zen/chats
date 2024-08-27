@@ -5,7 +5,7 @@ import { ModelType } from "../Model.js";
 export interface AzureOpenAIConfig {
   azure_endpoint: string;
   api_key: string;
-  deployments: Record<ModelsKeys, string>;
+  deployments: Partial<Record<ModelsKeys, string>>;
   api_version: string;
   headers?: Record<string, string>;
   body?: Record<string, any>;
