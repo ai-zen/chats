@@ -7,4 +7,5 @@ export class GPT4O_20240806 extends ChatGPT {
   static OUTPUT_MAX_TOKENS_LOWER_LIMIT = 800;
   static OUTPUT_MAX_TOKENS = 16384;
   static IS_SUPPORT_IMAGE_CONTENT = true;
+  static IS_SUPPORT_TOOLS_CALL = true;
 }
