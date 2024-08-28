@@ -109,15 +109,20 @@ export class Chat extends ChatContext {
       try {
         await this.parseStreamData(receiver, stream);
 
-        if (receiver.status === ChatAL.MessageStatus.Aborted) {
+        if (
+          (receiver.status as ChatAL.MessageStatus) ===
+          ChatAL.MessageStatus.Aborted
+        ) {
           break abortBlock;
         }
 
         receiver.status = ChatAL.MessageStatus.Completed;
 
         if (await this.handleToolCall(receiver)) {
-          // @ts-ignore
-          if (receiver.status === ChatAL.MessageStatus.Aborted) {
+          if (
+            (receiver.status as ChatAL.MessageStatus) ===
+            ChatAL.MessageStatus.Aborted
+          ) {
             break abortBlock;
           }
 
