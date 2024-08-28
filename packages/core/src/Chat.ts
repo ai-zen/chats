@@ -111,7 +111,9 @@ export class Chat extends ChatContext {
 
         if (
           (receiver.status as ChatAL.MessageStatus) ===
-          ChatAL.MessageStatus.Aborted
+            ChatAL.MessageStatus.Aborted ||
+          (receiver.status as ChatAL.MessageStatus) ===
+            ChatAL.MessageStatus.Error
         ) {
           break abortBlock;
         }
@@ -121,7 +123,9 @@ export class Chat extends ChatContext {
         if (await this.handleToolCall(receiver)) {
           if (
             (receiver.status as ChatAL.MessageStatus) ===
-            ChatAL.MessageStatus.Aborted
+              ChatAL.MessageStatus.Aborted ||
+            (receiver.status as ChatAL.MessageStatus) ===
+              ChatAL.MessageStatus.Error
           ) {
             break abortBlock;
           }
