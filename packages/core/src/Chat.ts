@@ -56,7 +56,7 @@ export class Chat extends ChatContext {
 
     const model = new ChatCompletionModels[modelKey]({
       model_config: this.model_config,
-      request_config: await endpoint.build(modelKey),
+      request_config: await endpoint.build(modelKey)
     }) as ChatCompletionModel;
     if (!model) {
       throw new Error("Model not found");
@@ -64,10 +64,19 @@ export class Chat extends ChatContext {
 
     const receiver = this.messages.at(-1) as Message;
     if (!receiver) {
-      throw new Error("You need to send at least one message as a receive message");
+      throw new Error(
+        "You need to send at least one message as a receive message"
+      );
     }
     if (receiver.role !== ChatAL.Role.Assistant) {
-      throw new Error("The last message will serve as the receiving message, and its role can only be assistant.");
+      throw new Error(
+        "The last message will serve as the receiving message, and its role can only be assistant."
+      );
+    }
+    if (receiver.status !== ChatAL.MessageStatus.Pending) {
+      throw new Error(
+        "The last message will serve as the receiving message, and its status can only be pending."
+      );
     }
 
     const controller = new AbortController();
@@ -93,7 +102,7 @@ export class Chat extends ChatContext {
       },
       onFinally: () => {
         this.events.emit("finally");
-      },
+      }
     });
 
     abortBlock: {
@@ -136,8 +145,8 @@ export class Chat extends ChatContext {
       function: {
         name: tool.function.name,
         description: tool.function.description,
-        parameters: tool.function.parameters,
-      },
+        parameters: tool.function.parameters
+      }
     }));
   }
 
@@ -160,7 +169,7 @@ export class Chat extends ChatContext {
           : undefined,
         tool_calls: message.tool_calls?.length ? message.tool_calls : undefined,
         tool_call_id: message.tool_call_id ?? undefined,
-        name: message.name ?? undefined,
+        name: message.name ?? undefined
       }));
   }
 
@@ -199,7 +208,7 @@ export class Chat extends ChatContext {
               if (!receiver.content[index]) {
                 receiver.content[index] = {
                   index,
-                  ...deltaSection,
+                  ...deltaSection
                 };
               }
 
@@ -245,9 +254,9 @@ export class Chat extends ChatContext {
                 function: {
                   name: "",
                   arguments: "",
-                  ...deltaToolCall.function,
+                  ...deltaToolCall.function
                 },
-                ...deltaToolCall,
+                ...deltaToolCall
               };
             }
 
@@ -281,7 +290,7 @@ export class Chat extends ChatContext {
             receiver.function_call = {
               name: "",
               arguments: "",
-              ...delta.function_call,
+              ...delta.function_call
             };
           }
 
@@ -331,7 +340,7 @@ export class Chat extends ChatContext {
       const ctx = new FunctionCallContext({
         function_call: task.function!,
         chat_instance: this,
-        result_message: resultReceiver,
+        result_message: resultReceiver
       });
 
       try {
@@ -344,7 +353,7 @@ export class Chat extends ChatContext {
 
       return {
         is_prevent_default: ctx.is_prevent_default,
-        status: resultReceiver.status,
+        status: resultReceiver.status
       };
     });
 
