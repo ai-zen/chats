@@ -341,29 +341,34 @@ export class Chat extends ChatContext {
         task.id ? Message.Tool(task) : Message.Function(task.function!)
       );
 
-      const matchTools: Tool | undefined = this.tools.find(
-        (tool) =>
-          tool.function.name == task.function!.name && tool.type == "function"
-      );
-
-      const ctx = new FunctionCallContext({
-        function_call: task.function!,
-        chat_instance: this,
-        result_message: resultReceiver
-      });
-
       try {
+        const matchTools: Tool | undefined = this.tools.find(
+          (tool) =>
+            tool.function.name == task.function!.name && tool.type == "function"
+        );
+
+        const ctx = new FunctionCallContext({
+          function_call: task.function!,
+          chat_instance: this,
+          result_message: resultReceiver
+        });
+
         resultReceiver.content = await matchTools?.exec(ctx);
         resultReceiver.status = ChatAL.MessageStatus.Completed;
+
+        return {
+          is_prevent_default: ctx.is_prevent_default,
+          status: resultReceiver.status
+        };
       } catch (error: any) {
         resultReceiver.content = error?.message;
         resultReceiver.status = ChatAL.MessageStatus.Error;
-      }
 
-      return {
-        is_prevent_default: ctx.is_prevent_default,
-        status: resultReceiver.status
-      };
+        return {
+          is_prevent_default: true,
+          status: resultReceiver.status
+        };
+      }
     });
 
     const results = await Promise.all(promises);
