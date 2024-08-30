@@ -1,13 +1,13 @@
 import {
   EventStreamContentType,
-  fetchEventSource
+  fetchEventSource,
 } from "@ai-zen/node-fetch-event-source";
 import type { JSONSchema7 } from "json-schema";
 import { ChatAL } from "../../ChatAL.js";
 import {
   ChatCompletionModel,
   ChatCompletionModelCreateOptions,
-  ChatCompletionModelCreateStreamOptions
+  ChatCompletionModelCreateStreamOptions,
 } from "../ChatCompletionModel.js";
 import { AsyncQueue } from "@ai-zen/async-queue";
 import { RequestConfig } from "../../Model.js";
@@ -18,7 +18,7 @@ export namespace ChatGPTTypes {
     Assistant = "assistant",
     User = "user",
     Function = "function",
-    Tool = "tool"
+    Tool = "tool",
   }
 
   export enum FinishReason {
@@ -26,7 +26,7 @@ export namespace ChatGPTTypes {
     Length = "length",
     ContentFilter = "content_filter",
     FunctionCall = "function_call",
-    ToolCalls = "tool_calls"
+    ToolCalls = "tool_calls",
   }
 
   export interface ToolDefine {
@@ -184,8 +184,8 @@ export abstract class ChatGPT<
           ...request_config.body,
           ...model_config,
           ...this.formatTools(options.tools),
-          messages: options.messages
-        })
+          messages: options.messages,
+        }),
       });
 
       const data: ChatGPTTypes.ResponseData = await res.json();
@@ -218,7 +218,7 @@ export abstract class ChatGPT<
         ...model_config,
         ...this.formatTools(options.tools),
         stream: true,
-        messages: options.messages
+        messages: options.messages,
       }),
       async onopen(response) {
         if (
@@ -229,11 +229,13 @@ export abstract class ChatGPT<
           return;
         }
 
+        let message: string;
         try {
-          throw new FatalError(await response.text());
+          message = await response.text();
         } catch {
-          throw new FatalError("Network Error");
+          message = "Network Error";
         }
+        throw new FatalError(message);
       },
       onerror(err) {
         if (err instanceof FatalError) throw err;
@@ -252,7 +254,7 @@ export abstract class ChatGPT<
         } catch (error: any) {
           throw new FatalError(error?.message);
         }
-      }
+      },
     })
       .catch((error) => {
         options.onError?.(error);
@@ -280,14 +282,14 @@ export abstract class ChatGPT<
     ) {
       return {
         tools: tools,
-        tool_choice: "auto"
+        tool_choice: "auto",
       };
     } else if (
       (this.constructor as typeof ChatCompletionModel).IS_SUPPORT_FUNCTION_CALL
     ) {
       return {
         functions: tools.map((tool) => tool.function),
-        function_call: "auto"
+        function_call: "auto",
       };
     }
   }
@@ -295,7 +297,7 @@ export abstract class ChatGPT<
   formatData(data: ChatGPTTypes.ResponseData): ChatAL.ResponseData {
     return {
       ...data,
-      choices: data.choices?.map(this.formatChoice.bind(this))
+      choices: data.choices?.map(this.formatChoice.bind(this)),
     };
   }
 
@@ -303,7 +305,7 @@ export abstract class ChatGPT<
     return {
       ...choice,
       message: this.formatMessage(choice.message),
-      finish_reason: this.formatFinalResponse(choice.finish_reason)
+      finish_reason: this.formatFinalResponse(choice.finish_reason),
     };
   }
 
@@ -312,7 +314,7 @@ export abstract class ChatGPT<
   ): ChatAL.StreamResponseData {
     return {
       ...data,
-      choices: data.choices?.map(this.formatStreamChoice.bind(this))
+      choices: data.choices?.map(this.formatStreamChoice.bind(this)),
     };
   }
 
@@ -320,7 +322,7 @@ export abstract class ChatGPT<
     return {
       ...choice,
       delta: this.formatDelta(choice.delta),
-      finish_reason: this.formatFinalResponse(choice.finish_reason)
+      finish_reason: this.formatFinalResponse(choice.finish_reason),
     };
   }
 
@@ -331,7 +333,7 @@ export abstract class ChatGPT<
     return {
       ...delta,
       content: this.formatContent(delta.content),
-      role: delta.role && this.formatRole(delta.role)
+      role: delta.role && this.formatRole(delta.role),
     };
   }
 
@@ -342,7 +344,7 @@ export abstract class ChatGPT<
     return {
       ...message,
       content: this.formatContent(message.content),
-      role: this.formatRole(message.role)
+      role: this.formatRole(message.role),
     };
   }
 
