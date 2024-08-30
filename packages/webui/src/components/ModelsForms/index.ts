@@ -13,6 +13,8 @@ export const MODELS_FORMS_MAP: ModelsFormsMap = {
   GPT4_0125Preview: ChatGPT_ModelConfigForm,
   GPT4_1106Preview: ChatGPT_ModelConfigForm,
   GPT4_VisionPreview: ChatGPT_ModelConfigForm,
+  GPT4O_20240513: ChatGPT_ModelConfigForm,
+  GPT4O_20240806: ChatGPT_ModelConfigForm,
   TextEmbeddingAda002_2: undefined,
   GLM3Turbo: ChatGLM_ModelConfigForm,
   GLM4: ChatGLM_ModelConfigForm,

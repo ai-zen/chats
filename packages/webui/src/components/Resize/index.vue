@@ -88,7 +88,7 @@ function onMouseMove(e: MouseEvent) {
   }
 }
 
-function onMouseUp(e: MouseEvent) {
+function onMouseUp(_e: MouseEvent) {
   beginPosition = null;
   beginSize = null;
 
